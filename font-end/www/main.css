@@ -1,0 +1,162 @@
+:root {
+    --bg-point: rgb(169, 168, 224);
+}
+
+.box-page {
+    display: flex;
+    flex-direction: column;
+}
+
+.box-game-play {
+    display: grid;
+    grid-template-areas: "god1 god1 god1"
+                         "card-all1 card-hand1 card-hand1"
+                         "card-play1 card-play1 card-play1"
+                         "hr hr hr"
+                         "card-play2 card-play2 card-play2"
+                         "card-hand2 card-hand2 card-all2"
+                         "god2 god2 god2";              
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    grid-gap: 20px;
+}
+
+.god {
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */
+    align-items: center;
+    font-size: 2em;
+    color: white;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    justify-self: center;
+    align-self: center;
+    background-color: rgb(223, 199, 221);
+}
+
+.armor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80px;
+    height: 20px;
+    font-size: 1em;
+    /* justify-self: center; */
+    background-color: rgb(187, 175, 233);
+    /* align-self: center; */
+    position: relative;
+}
+
+.card-all {
+    background-color: greenyellow;
+    width: 100px;
+    height: 100px;
+    justify-self: center;
+}
+
+.card-hand {
+    background-color: rgb(223, 218, 199);
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-play {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    background-color: rgb(180, 206, 149);
+}
+
+.god1 {
+    display: grid;
+    grid-area: god1;
+    grid-template-columns: 100px 1fr;
+    grid-template-rows: 1fr;
+    background-color: #ddd;
+}
+
+.card-all1 {
+    grid-area: card-all1;
+    background-color: rgb(223, 199, 199);
+}
+
+.card-hand1 {
+    grid-area: card-hand1;
+}
+
+.card-play1 {
+    grid-area: card-play1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* background-color: rgb(212, 223, 199); */
+}
+
+.god2 {
+    display: grid;
+    grid-area: god2;
+    grid-template-columns: 1fr 100px;
+    grid-template-rows: 1fr;
+    background-color: #ddd;
+}
+
+.card-all2 {
+    grid-area: card-all2;
+}
+
+.card-hand2 {
+    grid-area: card-hand2;
+}
+
+.card-play2 {
+    grid-area: card-play2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* background-color: rgb(168, 224, 180); */
+}
+
+.hr {
+    grid-area: hr;
+    align-self: center;
+    display: inline-flex;
+    justify-content: space-between;
+}
+
+.point1 {
+    background-color: var(--bg-point);
+}
+
+.point2 {
+    background-color: var(--bg-point);
+}
+
+.bd1 {
+    border: 1px solid black;
+}
+
+.card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100px;
+    height: 90%;
+    margin: 6px 12px;
+    border: 1px solid gold;
+    background-color: aliceblue;
+}
+
+.card:focus {
+    outline: red auto 5px;
+}
+
+.hr button {
+    height: 50px;
+    border: none;
+}
