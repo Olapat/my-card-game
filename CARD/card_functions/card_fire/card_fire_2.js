@@ -6,6 +6,7 @@ module.exports = class F2 extends Fire {
         super();
         this.name = 'f2';
         this.description = 'ทำลาย point ศัตรู 2 แต้ม';
+        this.price = 2;
     };
 
     func(pSelf, pEnemy) {

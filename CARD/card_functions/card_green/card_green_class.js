@@ -1,5 +1,8 @@
-class green {
+const Card = require('../card_class');
+
+class green extends Card {
     constructor () {
+        super();
         this.elemental = 'green';
     }
 
