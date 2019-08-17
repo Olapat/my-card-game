@@ -1,8 +1,13 @@
 var cardP1 = null, cardP2 = null;
 var resJsonPOST;
+var resJsonGetCard;
 var hp1, hp2, ar1, ar2;
+var round = 1;
+var acpI;   //allCardPlayer
+var acpII;
+var cardInHand = [];
 
-function start() {
+async function start() {
     hp1 = 30;
     hp2 = 30;
     ar1 = 0;
@@ -10,6 +15,42 @@ function start() {
 
     document.getElementById('hp1').textContent = hp1;
     document.getElementById('hp2').textContent = hp2;
+    document.getElementById('round').textContent = round;
+
+
+    try {
+        const resGetCard = await get('/get-card-all');
+        if (resGetCard.ok) {
+            resJsonGetCard = await resGetCard.json();
+            // console.log(resJsonGetCard);
+            if (resJsonGetCard && resJsonGetCard.length > 0) {
+                acpI = shuffleIndexCard(resJsonGetCard);
+                console.log(acpI);
+                //แก้ไขการสุ่มเหมือนกันสองอัน โดยการใช้ setTimeout เพื่อถ่วงเวลา
+                setTimeout(() => {
+                    acpII = shuffleIndexCard(resJsonGetCard);
+                    console.log(acpII);
+                    cardInHand.push(acpII[0], acpII[1], acpII[2]);
+                    console.log(cardInHand);
+                    // cardInHand.forEach((va, index) => {
+                    //     document.getElementById(`bnt-card-hand${index + 1}`).textContent = va;
+                    // });
+                    const cardHand = cardInHand.length > 0 ? cardInHand.map((va, index) =>
+                        `<button id="bnt-card-hand${index + 1}" class="card" onclick="p2SelectCard('${va}')">
+                            ${va}
+                        </button>`
+                    ) : [];
+                    document.getElementById('card-in-hand').innerHTML = cardHand.join('');
+                }, 300)
+
+            }
+        } else {
+            throw new Error("Network response was not ok. '/get-card-all' ");
+        }
+    } catch (error) {
+        console.log(error);
+        return error;
+    }
 }
 
 start();
@@ -62,6 +103,11 @@ async function thisOk() {
 
     // Remove all saved data from sessionStorage
     // sessionStorage.clear();
+
+    round++;
+    document.getElementById('round').textContent = round;
+
+
 };
 
 async function thisSell() {
@@ -78,4 +124,40 @@ async function thisSell() {
         console.log(error);
         return error;
     }
+
 };
+
+
+var cardIndexP1 = 0;
+var cardIndexP2 = 3;
+function pickCard(player) {
+    switch (player) {
+        case 'player1':
+            const c1 = acpI[cardIndexP1];
+            cardIndexP1++;
+            console.log(c1);
+            break;
+
+        case 'player2':
+            const c2 = acpII[cardIndexP2];
+            cardIndexP2++;
+            console.log(c2);
+            cardInHand.push(c2);
+            const cardHand = cardInHand.length > 0 ? cardInHand.map((va, index) =>
+                `<button id="bnt-card-hand${index + 1}" class="card" onclick="p2SelectCard('${va}')">
+                    ${va}
+                </button>`
+            ) : [];
+            document.getElementById('card-in-hand').innerHTML = cardHand.join('');
+
+            if (cardHand.length >= 5) {
+                document.getElementById('card-all').disabled = true;
+            } else {
+                document.getElementById('card-all').disabled = false;
+            }
+            break;
+        default:
+            break;
+    }
+
+}
