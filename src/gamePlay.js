@@ -1,6 +1,7 @@
 const AllCard = require('../CARD/card_functions');
-const { players } = require('../PLAYERS/players');
+const Players = require('../PLAYERS/players');
 
+var players = new Players();
 const endTurn = (req, res) => {
     const { cardP1, cardP2 } = req.body;
     const { p1, p2 } = req.params;
@@ -51,14 +52,17 @@ const endTurn = (req, res) => {
                 C1.func(p1, p2, 'lose');
             }
         }
-    }
+    };
 
-    console.log(players[p1]); 
-    console.log(players[p2]); 
+    const _p1 = players.getPlayer(p1);
+    const _p2 = players.getPlayer(p2);
+
+    console.log(_p1); 
+    console.log(_p2); 
 
     res.json({
-        player1: players[p1],
-        player2: players[p2]
+        player1: _p1.getState(),
+        player2: _p2.getState()
     });
 };
 
