@@ -67,12 +67,16 @@ function p2SelectCard(name) {
     document.getElementById('card-play2').textContent = cardP2;
 }
 
+async function endTurn() {
+    console.log(cardP2);
+    let playerName = sessionStorage.getItem('player_name');
+
+    const resPOST = await post('/end-trun', { card: cardP2, player: playerName });
+    
+}
+
 async function thisOk() {
     console.log(cardP1, cardP2);
-    // console.log(AllCard());
-    const res = await get('/');
-    const resJson = await res.json();
-    console.log(resJson);
 
     const resPOST = await post('/end-trun-p1&&p2', { cardP1, cardP2 });
     resJsonPOST = await resPOST.json();
@@ -106,8 +110,6 @@ async function thisOk() {
 
     round++;
     document.getElementById('round').textContent = round;
-
-
 };
 
 async function thisSell() {

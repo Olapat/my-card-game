@@ -1,5 +1,6 @@
 const App = require('./app');
 const EndTurn = require('./src/gamePlay');
+const endTurn = require('./src/end_turn');
 const SellCard = require('./src/sell_card');
 const GetAllCard = require('./src/get_all_card');
 const CreateRoom = require('./src/create_room');
@@ -16,6 +17,8 @@ App.get('/', (req, res) => {
 });
 
 App.post('/end-trun-:p1&&:p2', EndTurn);
+
+App.post('/end-trun', endTurn);
 
 App.post('/sell', SellCard);
 
