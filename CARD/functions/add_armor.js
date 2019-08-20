@@ -1,8 +1,7 @@
 const Players = require('../../PLAYERS/players');
 
 const addArmor = (name, ar) => {
-    const players = new Players();
-    const player = players.getPlayer(name);
+    const player = Players.getPlayer(name);
     if (player) {
         armorl = player.getState().armor;
         player.setArmor(armorl + ar);

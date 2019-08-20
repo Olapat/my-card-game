@@ -41,4 +41,4 @@ class players {
     };
 };
 
-module.exports = players;
+module.exports = new players;

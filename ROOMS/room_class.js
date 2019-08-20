@@ -4,37 +4,49 @@ class room {
         this.roomInex = 1;
     }
 
-    getRoom() {
+    getRoom(key) {
+        return this.room[key];
+    };
+
+    getRooms() {
         return this.room;
     };
 
     createRoom(playerName) {
         const key = this.roomInex;
         this.room = {
-            ...this.room, 
-            [key]: { 
-                player1: playerName, 
+            ...this.room,
+            [key]: {
+                player1: playerName,
                 player2: null,
                 gameplay: {}
-            }};
+            }
+        };
         this.roomInex++;
+        return key;
     };
 
     joinRoom(keyRoom, playerName) {
         // const roomIndex = this.room.findIndex(k => k.keyRoom === parseInt(keyRoom));
         // this.room[roomIndex] = { ...this.room[roomIndex], player2: playerName };
-
-        this.room[keyRoom] = {
-            ...this.room[keyRoom], 
-            player2: playerName
+        if (keyRoom, playerName) {
+            this.room[keyRoom] = {
+                ...this.room[keyRoom],
+                player2: playerName
+            }
+            return true;
+        } else {
+            return false;
         }
+
+
     };
 
-    setGamePlay(keyRoom, round, Cplayer1, Cplayer2, win) {
+    setGamePlay(keyRoom, round, Cplayer1 = null, Cplayer2 = null, win = null) {
         this.room[keyRoom] = {
-            ...this.room[keyRoom], 
+            ...this.room[keyRoom],
             gameplay: {
-                ...this.room[keyRoom].gameplay, 
+                ...this.room[keyRoom].gameplay,
                 [round]: {
                     CardPlayer1: Cplayer1,
                     CardPlayer2: Cplayer2,
@@ -43,7 +55,7 @@ class room {
             }
         }
     };
-    
+
     destroyRoom(keyRoom) {
         const roomIndex = this.room.findIndex(k => k.keyRoom === keyRoom);
         this.room.slice(roomIndex);

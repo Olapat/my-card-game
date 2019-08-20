@@ -1,7 +1,7 @@
 const Green = require('./card_green_class');
 const regenHP = require('../../functions/regen_HP');
 const delPoint = require('../../functions/del_point');
-const { players } = require('../../../PLAYERS/players');
+const Players = require('../../../PLAYERS/players');
 
 class G3 extends Green {
     constructor() {
@@ -12,7 +12,7 @@ class G3 extends Green {
     };
 
     func(pSelf, pEnemy) {
-        const player = players[pSelf];
+        const player = Players.getPlayer(pSelf);
         let point = 0;
         if (player) {
             point = player.getState().point;

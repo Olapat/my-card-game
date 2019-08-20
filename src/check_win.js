@@ -1,9 +1,9 @@
 const AllCard = require('../CARD/card_functions');
 const Players = require('../PLAYERS/players');
 
-const endTurn = (req, res) => {
-    const { cardP1, cardP2 } = req.body;
-    const { p1, p2 } = req.params;
+const checkWin = (card, player) => {
+    const { cardP1, cardP2 } = card;
+    const { p1, p2 } = player;
     console.log(p1, p2);
     const c1 = AllCard[cardP1];
     const c2 = AllCard[cardP2];
@@ -59,10 +59,10 @@ const endTurn = (req, res) => {
     console.log(_p1); 
     console.log(_p2); 
 
-    res.json({
+    return {
         player1: _p1.getState(),
         player2: _p2.getState()
-    });
+    };
 };
 
-module.exports = endTurn;
+module.exports = checkWin;

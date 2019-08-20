@@ -4,17 +4,14 @@ async function getRooms() {
     const responseJSON = await response.json();
     console.log(responseJSON);
 
-
-
     if (responseJSON) {
-
         for (const key in responseJSON) {
             if (responseJSON.hasOwnProperty(key)) {
                 // const value = responseJSON[key];
                 const li = document.createElement("li");
                 const btn = document.createElement("button");
                 const a = document.createElement("a");
-                a.href = "game_play.html";
+                // a.href = "game_play.html";
                 btn.onclick = () => joinRoom(key);
                 const t = document.createTextNode("enter room-" + key);
                 btn.appendChild(t);
@@ -49,10 +46,27 @@ async function createRoom() {
     const response = await post('/create-room', { playerName });
     const responseJSON = await response.json();
     console.log(responseJSON);
+    if (responseJSON) {
+        const room = {
+            keyRoom: responseJSON.keyRoom,
+            player: playerName,
+            isPlayer: "player1"
+        }
+        sessionStorage.setItem('room', JSON.stringify(room));
+        window.location.assign('game_play.html');
+    }
+    
 }
 
 async function joinRoom(keyRoom) {
     const response = await post(`/join-rooms-${keyRoom}`, { playerName });
-    // const responseJSON = await response.json();
-    // console.log(responseJSON);
+    const responseJSON = await response.json();
+    console.log(responseJSON);
+    const room = {
+        keyRoom: keyRoom,
+        player: playerName,
+        isPlayer: "player2"
+    }
+    sessionStorage.setItem('room', JSON.stringify(room));
+    if (responseJSON && responseJSON.join) window.location.assign('game_play.html');
 }

@@ -4,14 +4,14 @@ const createPlayer = (req, res) => {
     const { playerName } = req.body;
     console.log(playerName);
 
-    const players = new Players();
-    if (!Players[playerName]) {
-        players.addPlayer(playerName);
-        console.log(players.getPlayer(playerName));
+    const player = Players.getPlayer(playerName);
+    if (!player) {
+        Players.addPlayer(playerName);
+        console.log(Players.getPlayer(playerName));
 
-        res.json(players.getPlayer(playerName));
+        res.json(Players.getPlayer(playerName));
     } else {
-        res.json({playerName});
+        res.json({ playerName });
     }
 };
 

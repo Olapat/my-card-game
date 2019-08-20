@@ -1,7 +1,7 @@
-const { players } = require('../../PLAYERS/players');
+const Player = require('../../PLAYERS/players');
 
 const regen_HP = (name, regen) => {
-    const player = players[name];
+    const player = Player.getPlayer(name);
     if (player) {
         let hpl = 0;
         hpl = player.getState().hp;

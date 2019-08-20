@@ -1,7 +1,7 @@
 const Water = require('./card_water_class');
 const delArmor = require('../../functions/del_armor');
 const delHP = require('../../functions/del_HP');
-const { players } = require('../../../PLAYERS/players');
+const Players = require('../../../PLAYERS/players');
 
 class W2 extends Water {
     constructor() {
@@ -12,7 +12,7 @@ class W2 extends Water {
     };
 
     func(pSelf, pEnemy) {
-        const player = players[pSelf];
+        const player = Players.getPlayer(pSelf);
         let armorl = 0;
         if (player) {
             armorl = player.getState().armor;

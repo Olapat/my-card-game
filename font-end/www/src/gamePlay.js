@@ -24,24 +24,16 @@ async function start() {
             resJsonGetCard = await resGetCard.json();
             // console.log(resJsonGetCard);
             if (resJsonGetCard && resJsonGetCard.length > 0) {
-                acpI = shuffleIndexCard(resJsonGetCard);
-                console.log(acpI);
-                //แก้ไขการสุ่มเหมือนกันสองอัน โดยการใช้ setTimeout เพื่อถ่วงเวลา
-                setTimeout(() => {
-                    acpII = shuffleIndexCard(resJsonGetCard);
-                    console.log(acpII);
-                    cardInHand.push(acpII[0], acpII[1], acpII[2]);
-                    console.log(cardInHand);
-                    // cardInHand.forEach((va, index) => {
-                    //     document.getElementById(`bnt-card-hand${index + 1}`).textContent = va;
-                    // });
-                    const cardHand = cardInHand.length > 0 ? cardInHand.map((va, index) =>
-                        `<button id="bnt-card-hand${index + 1}" class="card" onclick="p2SelectCard('${va}')">
-                            ${va}
-                        </button>`
-                    ) : [];
-                    document.getElementById('card-in-hand').innerHTML = cardHand.join('');
-                }, 300)
+                acpII = shuffleIndexCard(resJsonGetCard);
+                console.log(acpII);
+                cardInHand.push(acpII[0], acpII[1], acpII[2]);
+                console.log(cardInHand);
+                const cardHand = cardInHand.length > 0 ? cardInHand.map((va, index) =>
+                    `<button id="bnt-card-hand${index + 1}" class="card" onclick="p2SelectCard('${va}')">
+                        ${va}
+                    </button>`
+                ) : [];
+                document.getElementById('card-in-hand').innerHTML = cardHand.join('');
 
             }
         } else {
@@ -70,9 +62,11 @@ function p2SelectCard(name) {
 async function endTurn() {
     console.log(cardP2);
     let playerName = sessionStorage.getItem('player_name');
+    const room = sessionStorage.getItem('room');
 
-    const resPOST = await post('/end-trun', { card: cardP2, player: playerName });
-    
+    const resPOST = await post('/end-trun', { card: cardP2, player: playerName, room: JSON.parse(room) , round });
+    resJsonPOST = await resPOST.json();
+    console.log(resJsonPOST);
 }
 
 async function thisOk() {
@@ -161,5 +155,4 @@ function pickCard(player) {
         default:
             break;
     }
-
 }
