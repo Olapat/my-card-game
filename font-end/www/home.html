@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,10 +12,24 @@
 
     <title>myCardGame-home</title>
 </head>
+
 <body>
     create room: <button onclick="createRoom()">room1</button>
     <!-- enter room: <a href="#"><button onclick="createRoom()">room1</button></a> -->
     <!-- index.html -->
     <div id="rooms"></div>
 </body>
+
+<script src="./node_modules/socket.io-client/dist/socket.io.js"></script>
+<script>
+    var socket = io("http://localhost:7000");
+    // socket.emit('chat message', 'Hello name olapat');
+    socket.on('return', (mgn) => {
+        console.log(mgn)
+    });
+    socket.on('return2', (mgn) => {
+        console.log(mgn)
+    });
+</script>
+
 </html>

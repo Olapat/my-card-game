@@ -23,7 +23,7 @@ const endTurn = async (req, res) => {
         StoreTurn.resetStoreTurn(keyRoom);
         res.json(ress);
     } else {
-        res.json({res: 'end'});
+        res.json({ res: 'end' });
     }
 };
 
