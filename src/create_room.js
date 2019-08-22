@@ -5,7 +5,7 @@ const createRoom = (req, res, socket) => {
     const keyRoom = Room.createRoom(playerName);
     console.log(keyRoom);
     // socket.join('room'); //-${keyRoom}
-    socket.join(keyRoom);
+    // socket.join(keyRoom);
     res.json({ keyRoom });
 };
 

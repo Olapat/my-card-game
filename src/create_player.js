@@ -11,7 +11,7 @@ const createPlayer = (req, res) => {
 
         res.json(Players.getPlayer(playerName));
     } else {
-        res.json({ playerName });
+        res.json({player});
     }
 };
 

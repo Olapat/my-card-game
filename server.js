@@ -17,22 +17,23 @@ const io = socketIO.listen(app);
 // runSocket(io);
 io.on('connection', (socket) => {
     console.log('a user connected');
-    socket.on('chat message', (msg) => {
-        console.log('message: ' + msg);
-    });
 
-    // socket.emit('return', "Br19");
+    socket.on('createRoom', (room) => socket.join(room, () => 
+        io.sockets.in(room).emit('event', { room: room })
+    ));
 
-    App.post('/create-room', (req, res) => CreateRoom(req, res, socket));
-
-    App.post('/join-rooms-:keyRoom', (req, res) => JoinRoom(req, res, socket, io));
-
+    socket.on('joinRoom', room => socket.join(room, () => 
+        io.sockets.in(room).emit('user-join', { join: room })
+    ));
 });
 
+App.post('/create-room', CreateRoom);
+
+App.post('/join-room-:keyRoom', JoinRoom);
 
 App.post('/end-trun-:p1&&:p2', EndTurn);
 
-App.post('/end-trun', endTurn);
+App.post('/end-trun', (req, res) => endTurn(req, res, io));
 
 App.post('/sell', SellCard);
 

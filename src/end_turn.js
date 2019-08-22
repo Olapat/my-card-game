@@ -2,7 +2,7 @@ const Room = require('../ROOMS/room_class');
 const StoreTurn = require('../ROOMS/store_turn');
 const CheckWin = require('../src/check_win');
 
-const endTurn = async (req, res) => {
+const endTurn = async (req, res, io) => {
     const { card, player, room, round } = req.body;
 
     const { keyRoom, isPlayer } = room;
@@ -22,6 +22,7 @@ const endTurn = async (req, res) => {
         const ress = CheckWin({ cardP1, cardP2 }, { p1, p2 });
         StoreTurn.resetStoreTurn(keyRoom);
         res.json(ress);
+        io.sockets.in(keyRoom).emit('end-turn', ress);
     } else {
         res.json({ res: 'end' });
     }
