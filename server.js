@@ -7,6 +7,7 @@ const CreateRoom = require('./src/create_room');
 const GetRooms = require('./src/get_rooms');
 const JoinRoom = require('./src/join_room');
 const CreatePlayer = require('./src/create_player');
+const EndTurnSocket = require('./src/end_turn_socket');
 const runSocket = require('./socket');
 
 const PORT = process.env.PORT || 7000;
@@ -18,13 +19,23 @@ const io = socketIO.listen(app);
 io.on('connection', (socket) => {
     console.log('a user connected');
 
-    socket.on('createRoom', (room) => socket.join(room, () => 
+    socket.on('createRoom', room => socket.join(room, () => 
         io.sockets.in(room).emit('event', { room: room })
     ));
 
     socket.on('joinRoom', room => socket.join(room, () => 
         io.sockets.in(room).emit('user-join', { join: room })
     ));
+
+    socket.on('endTurn', async data => {
+        console.log(data);
+        const res = await EndTurnSocket(data);
+        console.log(res, 'res in endturn');
+
+        io.sockets.in(data.room.keyRoom.toString()).emit('end-turn', res)
+    });
+
+
 });
 
 App.post('/create-room', CreateRoom);

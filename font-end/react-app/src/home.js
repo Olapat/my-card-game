@@ -53,10 +53,10 @@ export default class Home extends React.PureComponent {
          }
          sessionStorage.setItem('room', JSON.stringify(room));
          this.props.history.push('/game-play');
-         this.getRoom();
+         // this.getRoom();
 
-         socket.emit('createRoom', data.keyRoom);
-         socket.on('event', data => console.log(data))
+         socket.emit('createRoom', data.keyRoom.toString());
+         // socket.on('event', data => console.log(data));
       }
    };
 
@@ -65,7 +65,7 @@ export default class Home extends React.PureComponent {
       let playerName = JSON.parse(pn);
 
       socket.emit('joinRoom', keyRoom);
-      socket.on('user-join', data => console.log(data));
+      // socket.on('user-join', data => console.log(data));
 
       const { data } = await post(`/join-room-${keyRoom}`, { playerName });
       console.log(data);

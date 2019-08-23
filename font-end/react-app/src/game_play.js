@@ -22,7 +22,8 @@ export default class GamePlay extends React.PureComponent {
             hp: 30,
             point: 0,
             armor: 0
-         }
+         },
+         endTurn: false
       };
    };
 
@@ -39,6 +40,20 @@ export default class GamePlay extends React.PureComponent {
          allCardPlay,
          cardInHand
       });
+
+      socket.on('end-turn', data => {
+         console.log(data, 'player-end');
+         if (!data) return;
+         this.setState({
+            player1: data.player1,
+            player2: data.player2
+         });
+
+         setTimeout(() => {
+            this.startTurn();
+         }, 2000);
+      });
+      
    };
 
    shuffleIndexCard = (arrayIndexCard) => {
@@ -59,17 +74,31 @@ export default class GamePlay extends React.PureComponent {
    sell = () => { };
 
    endTurn = async () => {
-      const { cardPlay, round } = this.state;
+      const { cardPlay, round, cardInHand: ch } = this.state;
       const playerName = sessionStorage.getItem('player_name');
       const room = sessionStorage.getItem('room');
-      const { data } = await post('/end-trun', { card: cardPlay, player: JSON.parse(playerName), room: JSON.parse(room), round });
-      console.log(data);
-      if (data && !(data.res && data.res === 'end')) {
-         this.setState({
-            player1: data.player1,
-            player2: data.player2
-         });
-      }
+      // const { data } = await post('/end-trun', { card: cardPlay, player: JSON.parse(playerName), room: JSON.parse(room), round });
+      // console.log(data);
+      // if (data && !(data.res && data.res === 'end')) {
+      //    this.setState({
+      //       player1: data.player1,
+      //       player2: data.player2
+      //    });
+      // }
+
+      let cardInHand = ch;
+      const index = cardInHand.indexOf(cardPlay);
+      if (index !== -1) cardInHand.splice(index, 1);
+      this.setState({
+         cardInHand: [...cardInHand]
+      });
+
+      socket.emit('endTurn', { 
+         card: cardPlay, 
+         player: JSON.parse(playerName), 
+         room: JSON.parse(room), 
+         round 
+      });
 
       // socket.emit('end-turn', {
       //    card: cardPlay,
@@ -78,13 +107,15 @@ export default class GamePlay extends React.PureComponent {
       //    round: round
       // });
 
-      socket.on('end-turn', data => {
-         console.log(data, 'player-end');
-         this.setState({
-            player1: data.player1,
-            player2: data.player2
-         });
-      });
+      
+   };
+
+   startTurn = () => {
+      this.setState(p => ({
+         endTurn: false,
+         round: p.round + 1
+      }));
+      this.pickCard();
    };
 
    pickCard = () => {
@@ -105,7 +136,7 @@ export default class GamePlay extends React.PureComponent {
    };
 
    render() {
-      const { cardInHand, player1, player2, cardPlay } = this.state;
+      const { cardInHand, player1, player2, cardPlay, endTurn } = this.state;
       return (
          <div className="box-game-play">
             <div className="god1 bd1">
@@ -141,7 +172,9 @@ export default class GamePlay extends React.PureComponent {
             <div className="hr">
                <button className="btn-sell" onClick={this.sell}>Sell</button>
                -----------------<p id="round"></p>
-               <button className="btn-ok" onClick={this.endTurn}>OK</button>
+               <button className="btn-ok" onClick={this.endTurn} disabled={endTurn}>
+                  OK
+               </button>
             </div>
             <div className="card-play2 bd1">
                <div id="card-play2" className="card-play">

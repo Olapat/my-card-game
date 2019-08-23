@@ -9,4 +9,8 @@ socket.on('return2', (mgn) => {
     console.log(mgn)
 });
 
+socket.on('event', data => console.log(data));
+socket.on('user-join', data => console.log(data));
+
+
 export default socket;
