@@ -6,6 +6,7 @@ module.exports = class F1 extends Fire {
         super();
         this.name = 'f1';
         this.description = 'ลบ HP 5';
+        this.price = 2;
     };
 
     getState() {

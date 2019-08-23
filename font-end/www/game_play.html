@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script type="text/javascript" src="./src/common_api.js"></script>
+    <title>myCardGame - gamePlay</title>
+</head>
+
+<body>
+    <div class="box-game-play">
+        <div class="god1 bd1">
+            <div class="point1 bd1">
+                point1
+            </div>
+            <div class="god bd1">
+                <p id="hp1"></p>
+                <div class="armor bd1">
+                    <p id="armor1"></p>
+                </div>
+            </div>
+
+        </div>
+        <button class="card card-all1 card-all" onclick="pickCard('player1');">
+            Card-all1
+        </button>
+        <div class="card-hand1 card-hand bd1">
+            <button class="card" onclick="p1SelectCard('F2')">
+                card-F1
+            </button>
+            <button class="card" onclick="p1SelectCard('W3')">
+                card-W1
+            </button>
+            <button class="card" onclick="p1SelectCard('G3')">
+                card-G1
+            </button>
+        </div>
+        <div class="card-play1 bd1">
+            <div class="card-play">
+                <p id="card-play1"></p>
+            </div>
+        </div>
+        <div class="hr">
+            <button class="btn-sell" onclick="thisSell()">Sell</button>
+            -----------------<p id="round"></p>
+            <button class="btn-ok" onclick="endTurn()">OK</button>
+        </div>
+        <div class="card-play2 bd1">
+            <div id="card-play2" class="card-play">
+                <p id="card-play2"></p>
+            </div>
+        </div>
+        <div id="card-in-hand" class="card-hand2 card-hand bd1">
+
+        </div>
+        <button id="card-all" class="card card-all2 card-all" onclick="pickCard('player2');">
+            Card-all2
+        </button>
+        <div class="god2 bd1">
+            <div class="god bd1">
+                <div class="armor bd1">
+                    <p id="armor2"></p>
+                </div>
+                <p id="hp2"></p>
+            </div>
+            <div class="point2 bd1">
+                point2
+            </div>
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="./src/random_card.js"></script>
+<script type="text/javascript" src="./src/gamePlay.js"></script>
+
+<script src="./node_modules/socket.io-client/dist/socket.io.js"></script>
+<script>
+    var socket = io("http://localhost:7000");
+    // socket.emit('chat message', 'Hello name olapat');
+    socket.on('return', (mgn) => {
+        console.log(mgn)
+    });
+    socket.on('return2', (mgn) => {
+        console.log(mgn)
+    });
+</script>
+
+</html>

@@ -1,15 +1,55 @@
 const App = require('./app');
 const EndTurn = require('./src/gamePlay');
+const endTurn = require('./src/end_turn');
 const SellCard = require('./src/sell_card');
+const GetAllCard = require('./src/get_all_card');
+const CreateRoom = require('./src/create_room');
+const GetRooms = require('./src/get_rooms');
+const JoinRoom = require('./src/join_room');
+const CreatePlayer = require('./src/create_player');
+const EndTurnSocket = require('./src/end_turn_socket');
+const runSocket = require('./socket');
 
 const PORT = process.env.PORT || 7000;
-App.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+const app = App.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+const socketIO = require('socket.io');
+const io = socketIO.listen(app);
 
-App.get('/', (req, res) => {
-    console.log(req.body);
-    res.json({ksd: 153});
+// runSocket(io);
+io.on('connection', (socket) => {
+    console.log('a user connected');
+
+    socket.on('createRoom', room => socket.join(room, () => 
+        io.sockets.in(room).emit('event', { room: room })
+    ));
+
+    socket.on('joinRoom', room => socket.join(room, () => 
+        io.sockets.in(room).emit('user-join', { join: room })
+    ));
+
+    socket.on('endTurn', async data => {
+        console.log(data);
+        const res = await EndTurnSocket(data);
+        console.log(res, 'res in endturn');
+
+        io.sockets.in(data.room.keyRoom.toString()).emit('end-turn', res)
+    });
+
+
 });
+
+App.post('/create-room', CreateRoom);
+
+App.post('/join-room-:keyRoom', JoinRoom);
 
 App.post('/end-trun-:p1&&:p2', EndTurn);
 
+App.post('/end-trun', (req, res) => endTurn(req, res, io));
+
 App.post('/sell', SellCard);
+
+App.get('/get-card-all', GetAllCard);
+
+App.get('/get-rooms', GetRooms);
+
+App.post('/create-player', CreatePlayer);

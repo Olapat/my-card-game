@@ -7,6 +7,7 @@ module.exports = class F3 extends Fire {
         super();
         this.name = 'f3';
         this.description = 'หากชนะจะ -8 HP ศัตรู แต่หากแพ้จะ -8 HP ตัวเอง และหากเสมอ จะ +2 point ทั้ง 2 ฝ่าย';
+        this.price = 3;
     };
 
     func(pSelf, pEnemy, res) {

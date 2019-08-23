@@ -23,17 +23,17 @@
             </div>
 
         </div>
-        <div class="card-all1 card-all bd1">
-            Card-all2
-        </div>
+        <button class="card card-all1 card-all" onclick="pickCard('player1');">
+            Card-all1
+        </button>
         <div class="card-hand1 card-hand bd1">
             <button class="card" onclick="p1SelectCard('F2')">
                 card-F1
             </button>
-            <button class="card" onclick="p1SelectCard('W1')">
+            <button class="card" onclick="p1SelectCard('W3')">
                 card-W1
             </button>
-            <button class="card" onclick="p1SelectCard('G1')">
+            <button class="card" onclick="p1SelectCard('G3')">
                 card-G1
             </button>
         </div>
@@ -44,7 +44,7 @@
         </div>
         <div class="hr">
             <button class="btn-sell" onclick="thisSell()">Sell</button>
-            -----------------
+            -----------------<p id="round"></p>
             <button class="btn-ok" onclick="thisOk()">OK</button>
         </div>
         <div class="card-play2 bd1">
@@ -52,20 +52,29 @@
                 <p id="card-play2"></p>
             </div>
         </div>
-        <div class="card-hand2 card-hand bd1">
-            <button class="card" onclick="p2SelectCard('F3')">
-                card-F1
+        <div id="card-in-hand" class="card-hand2 card-hand bd1">
+            <!-- <button id="bnt-card-hand1" class="card" onclick="p2SelectCard('1')">
+                card-1
             </button>
-            <button class="card" onclick="p2SelectCard('W3')">
-                card-W1
+            <button id="bnt-card-hand2" class="card" onclick="p2SelectCard('2')">
+                card-2
             </button>
-            <button class="card" onclick="p2SelectCard('G1')">
-                card-G1
+            <button id="bnt-card-hand3" class="card" onclick="p2SelectCard('3')">
+                card-3
             </button>
+            <button id="bnt-card-hand4" class="card" onclick="p2SelectCard('4')">
+                card-4
+            </button>
+            <button id="bnt-card-hand5" class="card" onclick="p2SelectCard('5')">
+                card-5
+            </button>
+            <button id="bnt-card-hand6" class="card" onclick="p2SelectCard('6')">
+                card-6
+            </button> -->
         </div>
-        <div class="card-all2 card-all bd1">
+        <button id="card-all" class="card card-all2 card-all" onclick="pickCard('player2');">
             Card-all2
-        </div>
+        </button>
         <div class="god2 bd1">
             <div class="god bd1">
                 <div class="armor bd1">
@@ -77,10 +86,12 @@
                 point2
             </div>
         </div>
-
     </div>
+
+    <a href="home.html">home</a>
 </body>
 
+<script type="text/javascript" src="./src/random_card.js"></script>
 <script type="text/javascript" src="./src/gamePlay.js"></script>
 <!-- <script type="text/javascript" src="index.js"></script> -->
 

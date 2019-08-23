@@ -1,7 +1,7 @@
-const { players } = require('../../PLAYERS/players');
+const Players = require('../../PLAYERS/players');
 
 const addPoint = (name, point) => {
-    const player = players[name];
+    const player = Players.getPlayer(name);
     if (player) {
         let pointl = 0;
         pointl = player.getState().point;
