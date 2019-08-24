@@ -166,3 +166,12 @@
     flex-direction: column;
     width: 100%;
 }
+
+.card-description {
+    word-wrap: break-word;
+    margin-left: 12px;
+    max-height: 100%;
+    height: auto;
+    width: 50%;
+    text-align: center;
+}

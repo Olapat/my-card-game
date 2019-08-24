@@ -8,6 +8,7 @@ const GetRooms = require('./src/get_rooms');
 const JoinRoom = require('./src/join_room');
 const CreatePlayer = require('./src/create_player');
 const EndTurnSocket = require('./src/end_turn_socket');
+const GetDataCards = require('./src/get_data_cards');
 const runSocket = require('./socket');
 
 const PORT = process.env.PORT || 7000;
@@ -53,3 +54,5 @@ App.get('/get-card-all', GetAllCard);
 App.get('/get-rooms', GetRooms);
 
 App.post('/create-player', CreatePlayer);
+
+App.get('/get-data-cards', GetDataCards);

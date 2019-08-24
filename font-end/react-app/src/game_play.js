@@ -11,6 +11,7 @@ export default class GamePlay extends React.PureComponent {
          dataPlayer: storePlayer.getState(),
          card: [],
          cardPlay: null,
+         cardDescriptios: '',
          round: 1,
          cardIndex: 0,
          allCardPlay: [],
@@ -30,6 +31,7 @@ export default class GamePlay extends React.PureComponent {
    };
 
    componentDidMount = async () => {
+      this.getDataCards();
       const { dataPlayer } = this.state;
       // if (!dataPlayer) this.setState({ dataPlayer: storePlayer.getState() })
       console.log(dataPlayer.isPlayer);
@@ -68,6 +70,14 @@ export default class GamePlay extends React.PureComponent {
          }, 2000);
       });
       
+   };
+
+   getDataCards = async () => {
+      const { data } = await get('get-data-cards');
+      console.log(data);
+      this.setState({
+         dataPlayer: data
+      });
    };
 
    shuffleIndexCard = (arrayIndexCard) => {
@@ -143,15 +153,19 @@ export default class GamePlay extends React.PureComponent {
    };
 
    selectCard = card => {
+      const { dataPlayer } = this.state;
+
+      const cardDescriptios = dataPlayer[card] ? dataPlayer[card].description : ''
       this.setState({
-         cardPlay: card
+         cardPlay: card,
+         cardDescriptios: cardDescriptios
       })
       console.log(card);
    };
 
    render() {
 
-      const { cardInHand, pEnemy, pSelf, cardPlay, endTurn } = this.state;
+      const { cardInHand, pEnemy, pSelf, cardPlay, endTurn, cardDescriptios } = this.state;
       return (
          <div className="box-game-play">
             <div className="god1 bd1">
@@ -195,10 +209,18 @@ export default class GamePlay extends React.PureComponent {
                <div id="card-play2" className="card-play">
                   <p id="card-play2">{cardPlay && cardPlay}</p>
                </div>
+               <span className="card-description">
+                  {cardDescriptios}
+               </span>
+
             </div>
             <div id="card-in-hand" className="card-hand2 card-hand bd1">
                {cardInHand.length > 0 && cardInHand.map((va, index) =>
-                  <button key={index} className="card" onClick={() => this.selectCard(va)} >
+                  <button 
+                     key={index} 
+                     className="card" 
+                     onClick={() => this.selectCard(va)} 
+                  >
                      {va}
                   </button>
                )}
