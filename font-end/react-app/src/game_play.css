@@ -27,7 +27,7 @@
     /* justify-content: center; */
     align-items: center;
     font-size: 2em;
-    color: white;
+    color: black;
     width: 100px;
     height: 100px;
     border-radius: 50%;
@@ -130,10 +130,12 @@
 
 .point1 {
     background-color: var(--bg-point);
+    color: red;
 }
 
 .point2 {
     background-color: var(--bg-point);
+    color: red;
 }
 
 .bd1 {
@@ -167,11 +169,25 @@
     width: 100%;
 }
 
-.card-description {
+.card-detail {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
     word-wrap: break-word;
     margin-left: 12px;
-    max-height: 100%;
-    height: auto;
-    width: 50%;
+    height: 100%;
+    width: 60%;
     text-align: center;
+}
+
+.card-description {
+    text-align: start;
+    height: 90%;
+}
+
+.card-point {
+    position: relative;
+    text-align: end;
+    bottom: 1px;
+    height: 10%;
 }

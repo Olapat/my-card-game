@@ -18,7 +18,6 @@ const io = socketIO.listen(app);
 
 // runSocket(io);
 io.on('connection', (socket) => {
-    console.log('a user connected');
 
     socket.on('createRoom', room => socket.join(room, () => 
         io.sockets.in(room).emit('event', { room: room })
@@ -29,11 +28,10 @@ io.on('connection', (socket) => {
     ));
 
     socket.on('endTurn', async data => {
-        console.log(data);
         const res = await EndTurnSocket(data);
         console.log(res, 'res in endturn');
 
-        io.sockets.in(data.room.keyRoom.toString()).emit('end-turn', res)
+        io.sockets.in(data.room.keyRoom).emit('end-turn', res)
     });
 
 
