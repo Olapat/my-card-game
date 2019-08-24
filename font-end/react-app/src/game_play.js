@@ -1,24 +1,26 @@
 import React from 'react';
 import { get, post } from './common_api';
 import socket from './socket.io';
+import { storePlayer } from './reducer/store_player';
 import './game_play.css';
 
 export default class GamePlay extends React.PureComponent {
    constructor() {
       super();
       this.state = {
+         dataPlayer: storePlayer.getState(),
          card: [],
          cardPlay: null,
          round: 1,
          cardIndex: 0,
          allCardPlay: [],
          cardInHand: [],
-         player1: {
+         pSelf: {
             hp: 30,
             point: 0,
             armor: 0
          },
-         player2: {
+         pEnemy: {
             hp: 30,
             point: 0,
             armor: 0
@@ -28,6 +30,10 @@ export default class GamePlay extends React.PureComponent {
    };
 
    componentDidMount = async () => {
+      const { dataPlayer } = this.state;
+      // if (!dataPlayer) this.setState({ dataPlayer: storePlayer.getState() })
+      console.log(dataPlayer.isPlayer);
+
       const { data } = await get('/get-card-all');
       let allCardPlay;
       let cardInHand;
@@ -44,10 +50,18 @@ export default class GamePlay extends React.PureComponent {
       socket.on('end-turn', data => {
          console.log(data, 'player-end');
          if (!data) return;
-         this.setState({
-            player1: data.player1,
-            player2: data.player2
-         });
+         if (dataPlayer && dataPlayer.isPlayer === 'player1') {
+            this.setState({
+               pSelf: data.player1,
+               pEnemy: data.player2
+            });
+         } else if (dataPlayer && dataPlayer.isPlayer === 'player2') {
+            this.setState({
+               pSelf: data.player2,
+               pEnemy: data.player1
+            });
+         }
+         
 
          setTimeout(() => {
             this.startTurn();
@@ -136,17 +150,18 @@ export default class GamePlay extends React.PureComponent {
    };
 
    render() {
-      const { cardInHand, player1, player2, cardPlay, endTurn } = this.state;
+
+      const { cardInHand, pEnemy, pSelf, cardPlay, endTurn } = this.state;
       return (
          <div className="box-game-play">
             <div className="god1 bd1">
                <div className="point1 bd1">
-                  <p>{player1.point}</p>
+                  <p>{pEnemy.point}</p>
                </div>
                <div className="god bd1">
-                  <p id="hp1">{player1.hp}</p>
+                  <p id="hp1">{pEnemy.hp}</p>
                   <div className="armor bd1">
-                     <p id="armor1">{player1.armor <= 0 ? 0 : player1.armor}</p>
+                     <p id="armor1">{pEnemy.armor <= 0 ? 0 : pEnemy.armor}</p>
                   </div>
                </div>
             </div>
@@ -194,12 +209,12 @@ export default class GamePlay extends React.PureComponent {
             <div className="god2 bd1">
                <div className="god bd1">
                   <div className="armor bd1">
-                     <p id="armor2">{player2.armor <= 0 ? 0 : player2.armor}</p>
+                     <p id="armor2">{pSelf.armor <= 0 ? 0 : pSelf.armor}</p>
                   </div>
-                  <p id="hp2">{player2.hp}</p>
+                  <p id="hp2">{pSelf.hp}</p>
                </div>
                <div className="point2 bd1">
-                  {player2.point}
+                  {pSelf.point}
                </div>
             </div>
          </div>

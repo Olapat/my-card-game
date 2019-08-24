@@ -1,6 +1,7 @@
 import React from 'react';
 import { get, post } from './common_api';
 import socket from './socket.io';
+import { storePlayer } from './reducer/store_player';
 
 export default class Home extends React.PureComponent {
    constructor() {
@@ -33,6 +34,10 @@ export default class Home extends React.PureComponent {
          playerName = prompt("Please enter your name:", "olapat");
          console.log(playerName);
          sessionStorage.setItem('player_name', JSON.stringify(playerName));
+         storePlayer.dispatch({
+            type: 'savePlayer',
+            dataPlayer: { playerName }
+         });
       }
       console.log(playerName);
       const { data } = await post('/create-player', { playerName });
@@ -46,17 +51,21 @@ export default class Home extends React.PureComponent {
       const { data } = await post('/create-room', { playerName });
       console.log(data);
       if (data) {
-         const room = {
-            keyRoom: data.keyRoom,
-            player: playerName,
+         const dataPlayer = {
+            joinInRoom: data.keyRoom.toString(),
+            playerName: playerName,
             isPlayer: "player1"
-         }
-         sessionStorage.setItem('room', JSON.stringify(room));
-         this.props.history.push('/game-play');
+         };
+         await storePlayer.dispatch({
+            type: 'savePlayer',
+            dataPlayer: dataPlayer
+         });
+         // sessionStorage.setItem('room', JSON.stringify(room));
          // this.getRoom();
 
          socket.emit('createRoom', data.keyRoom.toString());
          // socket.on('event', data => console.log(data));
+         this.props.history.push('/game-play');
       }
    };
 
@@ -69,13 +78,17 @@ export default class Home extends React.PureComponent {
 
       const { data } = await post(`/join-room-${keyRoom}`, { playerName });
       console.log(data);
-      const room = {
-         keyRoom: keyRoom,
-         player: playerName,
+      const dataPlayer = {
+         joinInRoom: keyRoom,
+         playerName: playerName,
          isPlayer: "player2"
       };
+      storePlayer.dispatch({
+         type: 'savePlayer',
+         dataPlayer: dataPlayer
+      });
       if (data && data.join) this.props.history.push('/game-play');
-      sessionStorage.setItem('room', JSON.stringify(room));
+      // sessionStorage.setItem('room', JSON.stringify(room));
    };
 
    render() {
