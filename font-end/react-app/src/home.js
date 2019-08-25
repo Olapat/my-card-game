@@ -20,7 +20,7 @@ export default class Home extends React.PureComponent {
 
    getRoom = async () => {
       const { data } = await get('/get-rooms');
-      console.log(data)
+      // console.log(data)
       this.setState({
          rooms: data
       });
@@ -39,9 +39,10 @@ export default class Home extends React.PureComponent {
             dataPlayer: { playerName }
          });
       }
-      console.log(playerName);
-      const { data } = await post('/create-player', { playerName });
-      console.log(data);
+      // console.log(playerName);
+      //const { data } = await 
+      post('/create-player', { playerName });
+      // console.log(data);
    };
 
    createRoom = async () => {
@@ -49,7 +50,6 @@ export default class Home extends React.PureComponent {
       let playerName = JSON.parse(pn);
 
       const { data } = await post('/create-room', { playerName });
-      console.log(data);
       if (data) {
          const dataPlayer = {
             joinInRoom: data.keyRoom.toString(),

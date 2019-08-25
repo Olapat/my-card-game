@@ -15,6 +15,7 @@ export default class GamePlay extends React.PureComponent {
          cardDescriptios: '',
          cardPoint: 0,
          round: 1,
+         listPlayerWin: [],
          cardIndex: 0,
          allCardPlay: [],
          cardInHand: [],
@@ -33,6 +34,8 @@ export default class GamePlay extends React.PureComponent {
          disabledCardDeck: false,
          disabledCardInHand: false,
          disableSell: false,
+         displayWinPSelf: "win-not-show",
+         displayWinPEnemy: "win-not-show"
       };
    };
 
@@ -40,7 +43,6 @@ export default class GamePlay extends React.PureComponent {
       this.getDataCards();
       const { dataPlayer } = this.state;
       // if (!dataPlayer) this.setState({ dataPlayer: storePlayer.getState() })
-      console.log(dataPlayer.isPlayer);
 
       const { data } = await get('/get-card-all');
       let allCardPlay;
@@ -56,7 +58,6 @@ export default class GamePlay extends React.PureComponent {
       });
 
       socket.on('end-turn', data => {
-         console.log(data, 'player-end');
          if (!data) return;
          if (data && data.end === '1player') {
             if (data.isPlayer !== dataPlayer.isPlayer) {
@@ -64,35 +65,43 @@ export default class GamePlay extends React.PureComponent {
                   cardPlayEnemy: "?"
                });
             }
-            return; 
+            return;
          }
+
          if (dataPlayer && dataPlayer.isPlayer === 'player1') {
-            this.setState({
+            this.setState(prevState => ({
                pSelf: data.player1,
                pEnemy: data.player2,
-               cardPlayEnemy: "?"
-            });
+               cardPlayEnemy: "?",
+               listPlayerWin: [...prevState.listPlayerWin, data.playerWin],
+               displayWinPSelf: data.playerWin === 'player1' ? "win-show" : "win-not-show",
+               displayWinPEnemy: data.playerWin === 'player2' ? "win-show" : "win-not-show"
+            }));
          } else if (dataPlayer && dataPlayer.isPlayer === 'player2') {
-            this.setState({
+            this.setState(prevState => ({
                pSelf: data.player2,
                pEnemy: data.player1,
-               cardPlayEnemy: "?"
-            });
-         }
+               cardPlayEnemy: "?",
+               listPlayerWin: [...prevState.listPlayerWin, data.playerWin],
+               displayWinPSelf: data.playerWin === 'player2' ? "win-show" : "win-not-show",
+               displayWinPEnemy: data.playerWin === 'player1' ? "win-show" : "win-not-show"
+            }));
+         };
+
+         console.log(data.playerWin);
 
          setTimeout(() => {
             this.startTurn();
-         }, 2000);
+         }, 3000);
       });
 
       socket.on('playerUpdateNumCard', data => {
-         console.log("ll", data);
          if (!data) return;
          if (!dataPlayer.isPlayer) return;
          if (data.isPlayer !== dataPlayer.isPlayer) {
             this.setState({
                numCardInHandEnemy: data.numCard
-            })
+            });
          }
       });
    };
@@ -100,16 +109,13 @@ export default class GamePlay extends React.PureComponent {
    componentDidUpdate(prevProps, prevState) {
       const cardHandLength = this.state.cardInHand.length;
       if (prevState.cardInHand !== this.state.cardInHand && this.state.dataPlayer.joinInRoom) {
-         console.log("prevState", prevState.cardInHand.length)
          socket.emit('updateNumCard', {
             numCard: cardHandLength,
             room: this.state.dataPlayer.joinInRoom,
             isPlayer: this.state.dataPlayer.isPlayer,
          });
-
       }
    };
-
 
    getDataCards = async () => {
       const { data } = await get('get-data-cards');
@@ -132,11 +138,9 @@ export default class GamePlay extends React.PureComponent {
       return arrayIndexCard;
    };
 
-
    sell = async () => {
       const { cardPlay, cardPoint, cardInHand, dataPlayer: { playerName } } = this.state;
       const { data } = await post('/sell', { name: playerName, card: cardPlay });
-      console.log(data);
       if (!data) return;
       this.setState(p => ({
          pSelf: {
@@ -192,7 +196,12 @@ export default class GamePlay extends React.PureComponent {
       this.setState(p => ({
          endTurn: false,
          round: p.round + 1,
-         cardPlayEnemy: null
+         cardPlayEnemy: null,
+         disabledCardDeck: false,
+         disabledCardInHand: false,
+         disableSell: false,
+         displayWinPSelf: "win-not-show",
+         displayWinPEnemy: "win-not-show"
       }));
       this.pickCard();
    };
@@ -229,8 +238,9 @@ export default class GamePlay extends React.PureComponent {
    };
 
    render() {
+      const { cardInHand, pEnemy, pSelf, cardPlay, endTurn, cardDescriptios, cardPoint, disabledCardInHand,
+         disabledCardDeck, disableSell, cardPlayEnemy, displayWinPSelf, displayWinPEnemy } = this.state;
 
-      const { cardInHand, pEnemy, pSelf, cardPlay, endTurn, cardDescriptios, cardPoint, disabledCardInHand, disabledCardDeck, disableSell, cardPlayEnemy } = this.state;
       return (
          <div className="box-game-play">
             <div className="god1 bd1">
@@ -242,6 +252,9 @@ export default class GamePlay extends React.PureComponent {
                   <div className="armor bd1">
                      <p id="armor1">{pEnemy.armor <= 0 ? 0 : pEnemy.armor}</p>
                   </div>
+               </div>
+               <div className="box-display-win" id={displayWinPEnemy}>
+                  <h1>WIN</h1>
                </div>
             </div>
             <button className="card card-all1 card-all" onClick={null}>
@@ -295,6 +308,9 @@ export default class GamePlay extends React.PureComponent {
                Card-all2
             </button>
             <div className="god2 bd1">
+               <div className="box-display-win" id={displayWinPSelf}>
+                  <h1>WIN</h1>
+               </div>
                <div className="god bd1">
                   <div className="armor bd1">
                      <p id="armor2">{pSelf.armor <= 0 ? 0 : pSelf.armor}</p>

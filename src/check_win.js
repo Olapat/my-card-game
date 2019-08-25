@@ -9,6 +9,7 @@ const checkWin = (card, player) => {
     const c2 = AllCard[cardP2];
     let e1, e2, w1, C1, C2, noCard = false;
     const cardP = ['F3'];
+    let playerWin;
 
     if (c1) {
         C1 = new c1();
@@ -31,12 +32,14 @@ const checkWin = (card, player) => {
     if (w1 && e2 && !noCard) {
         if (w1 === e2) {
             console.log('play1_win');
+            playerWin = 'player1'
             C1.func(p1, p2, 'win');
             if (cardP.includes(cardP2)) {
                 C2.func(p2, p1, 'lose');
             }
         } else if (e1 === e2) {
             console.log('เสมอ');
+            playerWin = 'draw'
             if (cardP.includes(cardP1)) {
                 C1.func(p1, p2, 'draw');
             }
@@ -46,6 +49,7 @@ const checkWin = (card, player) => {
             }
         } else {
             console.log('play1_lose');
+            playerWin = 'player2'
             C2.func(p2, p1, 'win');
             if (cardP.includes(cardP1)) {
                 C1.func(p1, p2, 'lose');
@@ -61,7 +65,8 @@ const checkWin = (card, player) => {
 
     return {
         player1: _p1.getState(),
-        player2: _p2.getState()
+        player2: _p2.getState(),
+        playerWin: playerWin
     };
 };
 

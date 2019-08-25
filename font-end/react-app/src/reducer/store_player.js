@@ -9,7 +9,6 @@ const State = {
 function store(state = State, actions) {
     switch (actions.type) {
         case 'savePlayer':
-            console.log(actions.dataPlayer);
             return state = {...actions.dataPlayer};
         default:
             return state;
