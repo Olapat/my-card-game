@@ -34,6 +34,14 @@ io.on('connection', (socket) => {
         io.sockets.in(data.room.keyRoom).emit('end-turn', res)
     });
 
+    socket.on('updateNumCard', data => {
+        console.log(data);
+        if (data && data.room) io.sockets.in(data.room).emit('playerUpdateNumCard', { 
+            numCard: data.numCard,
+            isPlayer: data.isPlayer
+        })
+    });
+
 
 });
 
