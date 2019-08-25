@@ -35,11 +35,12 @@ io.on('connection', (socket) => {
     });
 
     socket.on('updateNumCard', data => {
-        console.log(data);
-        if (data && data.room) io.sockets.in(data.room).emit('playerUpdateNumCard', { 
-            numCard: data.numCard,
-            isPlayer: data.isPlayer
-        })
+        if (data && data.room) {
+                io.sockets.in(data.room).emit('playerUpdateNumCard', { 
+                numCard: data.numCard,
+                isPlayer: data.isPlayer
+            });
+        }
     });
 
 

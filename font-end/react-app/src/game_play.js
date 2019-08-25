@@ -11,6 +11,7 @@ export default class GamePlay extends React.PureComponent {
          dataPlayer: storePlayer.getState(),
          cards: [],
          cardPlay: null,
+         cardPlayEnemy: null,
          cardDescriptios: '',
          cardPoint: 0,
          round: 1,
@@ -57,18 +58,27 @@ export default class GamePlay extends React.PureComponent {
       socket.on('end-turn', data => {
          console.log(data, 'player-end');
          if (!data) return;
+         if (data && data.end === '1player') {
+            if (data.isPlayer !== dataPlayer.isPlayer) {
+               this.setState({
+                  cardPlayEnemy: "?"
+               });
+            }
+            return; 
+         }
          if (dataPlayer && dataPlayer.isPlayer === 'player1') {
             this.setState({
                pSelf: data.player1,
-               pEnemy: data.player2
+               pEnemy: data.player2,
+               cardPlayEnemy: "?"
             });
          } else if (dataPlayer && dataPlayer.isPlayer === 'player2') {
             this.setState({
                pSelf: data.player2,
-               pEnemy: data.player1
+               pEnemy: data.player1,
+               cardPlayEnemy: "?"
             });
          }
-         
 
          setTimeout(() => {
             this.startTurn();
@@ -181,7 +191,8 @@ export default class GamePlay extends React.PureComponent {
    startTurn = () => {
       this.setState(p => ({
          endTurn: false,
-         round: p.round + 1
+         round: p.round + 1,
+         cardPlayEnemy: null
       }));
       this.pickCard();
    };
@@ -219,7 +230,7 @@ export default class GamePlay extends React.PureComponent {
 
    render() {
 
-      const { cardInHand, pEnemy, pSelf, cardPlay, endTurn, cardDescriptios, cardPoint, disabledCardInHand, disabledCardDeck, disableSell, numCardInHandEnemy } = this.state;
+      const { cardInHand, pEnemy, pSelf, cardPlay, endTurn, cardDescriptios, cardPoint, disabledCardInHand, disabledCardDeck, disableSell, cardPlayEnemy } = this.state;
       return (
          <div className="box-game-play">
             <div className="god1 bd1">
@@ -248,7 +259,7 @@ export default class GamePlay extends React.PureComponent {
             </div>
             <div className="card-play1 bd1">
                <div className="card-play">
-                  <p id="card-play1"></p>
+                  <p id="card-play1">{cardPlayEnemy}</p>
                </div>
             </div>
             <div className="hr">

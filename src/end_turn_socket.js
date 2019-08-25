@@ -25,7 +25,7 @@ const endTurn = async data => {
         return ress;
         // io.sockets.in(keyRoom).emit('end-turn', ress);
     } else {
-        return undefined;
+        return { end: '1player', isPlayer };
     }
 };
 
