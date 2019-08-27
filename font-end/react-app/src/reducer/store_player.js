@@ -3,7 +3,8 @@ import { createStore } from 'redux';
 const State = {
     playerName: undefined,
     joinInRoom: undefined,
-    isPlayer: undefined
+    isPlayer: undefined,
+    playerEnemy: undefined
 } 
 
 function store(state = State, actions) {

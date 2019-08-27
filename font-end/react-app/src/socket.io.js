@@ -6,9 +6,9 @@ var socket = io("http://localhost:7000");
 socket.on('event', data => {
     // console.log(data);
 });
-socket.on('user-join', data => {
-    // console.log(data);
-});
+// socket.on('user-join', data => {
+//     console.log(data);
+// });
 
 
 export default socket;

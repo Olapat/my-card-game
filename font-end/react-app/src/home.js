@@ -2,6 +2,7 @@ import React from 'react';
 import { get, post } from './common_api';
 import socket from './socket.io';
 import { storePlayer } from './reducer/store_player';
+import { storeRoom } from './reducer/store_room';
 
 export default class Home extends React.PureComponent {
    constructor() {
@@ -54,17 +55,24 @@ export default class Home extends React.PureComponent {
          const dataPlayer = {
             joinInRoom: data.keyRoom.toString(),
             playerName: playerName,
-            isPlayer: "player1"
+            isPlayer: "player1",
+            playerEnemy: undefined
          };
          await storePlayer.dispatch({
             type: 'savePlayer',
             dataPlayer: dataPlayer
          });
-         // sessionStorage.setItem('room', JSON.stringify(room));
+         await storeRoom.dispatch({
+            type: 'saveRoom',
+            dataRoom: { }
+         })
          // this.getRoom();
 
-         socket.emit('createRoom', data.keyRoom.toString());
-         // socket.on('event', data => console.log(data));
+         socket.emit('createRoom', { 
+            room: data.keyRoom.toString(),
+            playerName: playerName
+         });
+
          this.props.history.push('/game-play');
       }
    };
@@ -73,22 +81,23 @@ export default class Home extends React.PureComponent {
       const { playerName: pn } = this.state;
       let playerName = JSON.parse(pn);
 
-      socket.emit('joinRoom', keyRoom);
-      // socket.on('user-join', data => console.log(data));
 
       const { data } = await post(`/join-room-${keyRoom}`, { playerName });
-      console.log(data);
+      // console.log(data);
       const dataPlayer = {
          joinInRoom: keyRoom,
          playerName: playerName,
-         isPlayer: "player2"
+         isPlayer: "player2",
+         playerEnemy: undefined
       };
       storePlayer.dispatch({
          type: 'savePlayer',
          dataPlayer: dataPlayer
       });
-      if (data && data.join) this.props.history.push('/game-play');
-      // sessionStorage.setItem('room', JSON.stringify(room));
+      if (data && data.join) {
+         socket.emit('joinRoom', keyRoom.toString());
+         this.props.history.push('/game-play');
+      } 
    };
 
    render() {

@@ -7,7 +7,7 @@ const joinRoom = (req, res) => { //, socket, io
         
     const succec = Room.joinRoom(keyRoom, playerName);
 
-    res.json({ join: succec }); 
+    res.json({ join: succec, playerName }); 
 };
 
 module.exports = joinRoom;

@@ -8,7 +8,6 @@ export default class GamePlay extends React.PureComponent {
    constructor() {
       super();
       this.state = {
-         dataPlayer: storePlayer.getState(),
          cards: [],
          cardPlay: null,
          cardPlayEnemy: null,
@@ -35,14 +34,50 @@ export default class GamePlay extends React.PureComponent {
          disabledCardInHand: false,
          disableSell: false,
          displayWinPSelf: "win-not-show",
-         displayWinPEnemy: "win-not-show"
+         displayWinPEnemy: "win-not-show",
+         playerWinGame: null,
+         bdDisplay: false,
+         room: {
+            key: null,
+            player1: null,
+            player2: null
+         }
       };
+      this.dataPlayer = storePlayer.getState();
+
+      socket.on('user-join', async data => {
+         console.log(data);
+         this.dataPlayer = storePlayer.getState();
+         let playerEnemy;
+         if (!data || !this.dataPlayer) {
+            console.log("retun")
+            return;
+         }
+         if (this.dataPlayer.isPlayer === 'player1') {
+            playerEnemy = data.player2;
+            console.log(playerEnemy)
+         } else if (this.dataPlayer.isPlayer === 'player2') {
+            playerEnemy = data.player1;
+            console.log(playerEnemy)
+         } else {
+            console.log( this.dataPlayer)
+
+         }
+         const dataPlayer = {
+            ...this.dataPlayer,
+            playerEnemy
+         };
+         await storePlayer.dispatch({
+            type: 'savePlayer',
+            dataPlayer: dataPlayer
+         });
+         this.dataPlayer = storePlayer.getState();
+      });
    };
 
    componentDidMount = async () => {
       this.getDataCards();
-      const { dataPlayer } = this.state;
-      // if (!dataPlayer) this.setState({ dataPlayer: storePlayer.getState() })
+      // this.getDataRoom();
 
       const { data } = await get('/get-card-all');
       let allCardPlay;
@@ -60,7 +95,7 @@ export default class GamePlay extends React.PureComponent {
       socket.on('end-turn', data => {
          if (!data) return;
          if (data && data.end === '1player') {
-            if (data.isPlayer !== dataPlayer.isPlayer) {
+            if (data.isPlayer !== this.dataPlayer.isPlayer) {
                this.setState({
                   cardPlayEnemy: "?"
                });
@@ -68,7 +103,7 @@ export default class GamePlay extends React.PureComponent {
             return;
          }
 
-         if (dataPlayer && dataPlayer.isPlayer === 'player1') {
+         if (this.dataPlayer && this.dataPlayer.isPlayer === 'player1') {
             this.setState(prevState => ({
                pSelf: data.player1,
                pEnemy: data.player2,
@@ -77,7 +112,7 @@ export default class GamePlay extends React.PureComponent {
                displayWinPSelf: data.playerWin === 'player1' ? "win-show" : "win-not-show",
                displayWinPEnemy: data.playerWin === 'player2' ? "win-show" : "win-not-show"
             }));
-         } else if (dataPlayer && dataPlayer.isPlayer === 'player2') {
+         } else if (this.dataPlayer && this.dataPlayer.isPlayer === 'player2') {
             this.setState(prevState => ({
                pSelf: data.player2,
                pEnemy: data.player1,
@@ -91,14 +126,20 @@ export default class GamePlay extends React.PureComponent {
          console.log(data.playerWin);
 
          setTimeout(() => {
-            this.startTurn();
+            const { pEnemy: { hp: hpE }, pSelf: { hp: hpS } } = this.state;
+            if (hpE <= 0 || hpS <= 0) {
+               this.endGame()
+            } else {
+               this.startTurn();
+            }
+
          }, 3000);
       });
 
       socket.on('playerUpdateNumCard', data => {
          if (!data) return;
-         if (!dataPlayer.isPlayer) return;
-         if (data.isPlayer !== dataPlayer.isPlayer) {
+         if (!this.dataPlayer.isPlayer) return;
+         if (data.isPlayer !== this.dataPlayer.isPlayer) {
             this.setState({
                numCardInHandEnemy: data.numCard
             });
@@ -108,11 +149,11 @@ export default class GamePlay extends React.PureComponent {
 
    componentDidUpdate(prevProps, prevState) {
       const cardHandLength = this.state.cardInHand.length;
-      if (prevState.cardInHand !== this.state.cardInHand && this.state.dataPlayer.joinInRoom) {
+      if (prevState.cardInHand !== this.state.cardInHand && this.dataPlayer.joinInRoom) {
          socket.emit('updateNumCard', {
             numCard: cardHandLength,
-            room: this.state.dataPlayer.joinInRoom,
-            isPlayer: this.state.dataPlayer.isPlayer,
+            room: this.dataPlayer.joinInRoom,
+            isPlayer: this.dataPlayer.isPlayer,
          });
       }
    };
@@ -122,6 +163,13 @@ export default class GamePlay extends React.PureComponent {
       this.setState({
          cards: data
       });
+   };
+
+   getDataRoom = async () => {
+      if (this.dataPlayer.joinInRoom) {
+         const { data } = await get(`get-data-room=${this.dataPlayer.joinInRoom}`);
+         console.log("dataRoom", data)
+      }
    };
 
    shuffleIndexCard = (arrayIndexCard) => {
@@ -139,7 +187,8 @@ export default class GamePlay extends React.PureComponent {
    };
 
    sell = async () => {
-      const { cardPlay, cardPoint, cardInHand, dataPlayer: { playerName } } = this.state;
+      const { cardPlay, cardPoint, cardInHand} = this.state;
+      const { playerName } = this.dataPlayer;
       const { data } = await post('/sell', { name: playerName, card: cardPlay });
       if (!data) return;
       this.setState(p => ({
@@ -155,7 +204,7 @@ export default class GamePlay extends React.PureComponent {
    };
 
    endTurn = async () => {
-      const { cardPlay, round, cardInHand: ch, dataPlayer } = this.state;
+      const { cardPlay, round, cardInHand: ch } = this.state;
       // const { data } = await post('/end-trun', { card: cardPlay, player: JSON.parse(playerName), room: JSON.parse(room), round });
       // console.log(data);
       // if (data && !(data.res && data.res === 'end')) {
@@ -170,14 +219,16 @@ export default class GamePlay extends React.PureComponent {
       this.setState({
          disabledCardDeck: true,
          disabledCardInHand: true,
-         disableSell: true
+         disableSell: true,
+         endTurn: true
       });
+      const { playerName, joinInRoom, isPlayer } = this.dataPlayer;
       socket.emit('endTurn', {
          card: cardPlay,
-         player: dataPlayer.playerName,
+         player: playerName,
          room: {
-            keyRoom: dataPlayer.joinInRoom,
-            isPlayer: dataPlayer.isPlayer,
+            keyRoom: joinInRoom,
+            isPlayer: isPlayer,
          },
          round
       });
@@ -194,6 +245,8 @@ export default class GamePlay extends React.PureComponent {
 
    startTurn = () => {
       this.setState(p => ({
+         cardPlay: null,
+         cardDescriptios: null,
          endTurn: false,
          round: p.round + 1,
          cardPlayEnemy: null,
@@ -201,7 +254,7 @@ export default class GamePlay extends React.PureComponent {
          disabledCardInHand: false,
          disableSell: false,
          displayWinPSelf: "win-not-show",
-         displayWinPEnemy: "win-not-show"
+         displayWinPEnemy: "win-not-show",
       }));
       this.pickCard();
    };
@@ -237,12 +290,48 @@ export default class GamePlay extends React.PureComponent {
       return displayer;
    };
 
+   endGame = () => {
+      const { pEnemy: { hp: hpE }, pSelf: { hp: hpS } } = this.state;
+      // if (hpE <= 0 || hpS <= 0) {
+      console.log(this.dataPlayer)
+      this.setState({
+         cardPlay: null,
+         cardDescriptios: null,
+         endTurn: true,
+         cardPlayEnemy: null,
+         disabledCardDeck: true,
+         disabledCardInHand: true,
+         disableSell: true,
+         displayWinPSelf: "win-not-show",
+         displayWinPEnemy: "win-not-show",
+         playerWinGame: hpE <= 0 ? this.dataPlayer.playerName : this.dataPlayer.playerEnemy,
+         bdDisplay: true
+      });
+      // }
+   };
+
+   closeBackDrop = () => {
+      this.setState({
+         bdDisplay: false
+      });
+   };
+
    render() {
-      const { cardInHand, pEnemy, pSelf, cardPlay, endTurn, cardDescriptios, cardPoint, disabledCardInHand,
-         disabledCardDeck, disableSell, cardPlayEnemy, displayWinPSelf, displayWinPEnemy } = this.state;
+      const {
+         cardInHand, pEnemy, pSelf, cardPlay, endTurn, cardDescriptios, cardPoint,
+         disabledCardInHand, disabledCardDeck, disableSell, cardPlayEnemy,
+         displayWinPSelf, displayWinPEnemy, playerWinGame, bdDisplay
+      } = this.state;
 
       return (
          <div className="box-game-play">
+            {bdDisplay &&
+               <div className="back-drop-end-game" onClick={null}>
+                  <i className="icon-close" onClick={this.closeBackDrop}>[close]</i>
+                  <p className="player-win-game">{playerWinGame}</p>
+                  <p className="WIN">WIN</p>
+               </div>
+            }
             <div className="god1 bd1">
                <div className="point1 bd1">
                   <p>{pEnemy.point}</p>
@@ -270,15 +359,15 @@ export default class GamePlay extends React.PureComponent {
                   </div>
                )}
             </div>
-            <div className="card-play1 bd1">
+            <div className="card-play1 bd1" onClick={this.endGame}>
                <div className="card-play">
                   <p id="card-play1">{cardPlayEnemy}</p>
                </div>
             </div>
             <div className="hr">
-               <button className="btn-sell" onClick={this.sell} disabled={disableSell}>Sell</button>
+               <button className="btn-sell" onClick={this.sell} disabled={disableSell || !cardPlay}>Sell</button>
                -----------------<p id="round"></p>
-               <button className="btn-ok" onClick={this.endTurn} disabled={endTurn}>
+               <button className="btn-ok" onClick={this.endTurn} disabled={endTurn || !cardPlay}>
                   OK
                </button>
             </div>
@@ -323,6 +412,6 @@ export default class GamePlay extends React.PureComponent {
                </div>
             </div>
          </div>
-      )
-   }
+      );
+   };
 };
