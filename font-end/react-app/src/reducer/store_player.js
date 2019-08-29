@@ -1,15 +1,18 @@
 import { createStore } from 'redux';
 
-function store(state, actions) {
+const State = {
+    playerName: undefined,
+    joinInRoom: undefined,
+    isPlayer: undefined,
+    playerEnemy: undefined
+} 
+
+function store(state = State, actions) {
     switch (actions.type) {
         case 'savePlayer':
-            state = actions.dataPlayer;
-            console.log(state)
-            break;
-        case 'getPlayer':
-            return state;
+            return state = {...actions.dataPlayer};
         default:
-            break;
+            return state;
     };
 };
 

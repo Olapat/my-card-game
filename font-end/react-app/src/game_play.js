@@ -1,33 +1,84 @@
 import React from 'react';
 import { get, post } from './common_api';
 import socket from './socket.io';
+import { storePlayer } from './reducer/store_player';
 import './game_play.css';
 
 export default class GamePlay extends React.PureComponent {
    constructor() {
       super();
       this.state = {
-         card: [],
+         cards: [],
          cardPlay: null,
+         cardPlayEnemy: null,
+         cardDescriptios: '',
+         cardPoint: 0,
          round: 1,
+         listPlayerWin: [],
          cardIndex: 0,
          allCardPlay: [],
          cardInHand: [],
-         player1: {
+         numCardInHandEnemy: 3,
+         pSelf: {
             hp: 30,
             point: 0,
             armor: 0
          },
-         player2: {
+         pEnemy: {
             hp: 30,
             point: 0,
             armor: 0
          },
-         endTurn: false
+         endTurn: false,
+         disabledCardDeck: false,
+         disabledCardInHand: false,
+         disableSell: false,
+         displayWinPSelf: "win-not-show",
+         displayWinPEnemy: "win-not-show",
+         playerWinGame: null,
+         bdDisplay: false,
+         room: {
+            key: null,
+            player1: null,
+            player2: null
+         }
       };
+      this.dataPlayer = storePlayer.getState();
+
+      socket.on('user-join', async data => {
+         console.log(data);
+         this.dataPlayer = storePlayer.getState();
+         let playerEnemy;
+         if (!data || !this.dataPlayer) {
+            console.log("retun")
+            return;
+         }
+         if (this.dataPlayer.isPlayer === 'player1') {
+            playerEnemy = data.player2;
+            console.log(playerEnemy)
+         } else if (this.dataPlayer.isPlayer === 'player2') {
+            playerEnemy = data.player1;
+            console.log(playerEnemy)
+         } else {
+            console.log( this.dataPlayer)
+
+         }
+         const dataPlayer = {
+            ...this.dataPlayer,
+            playerEnemy
+         };
+         await storePlayer.dispatch({
+            type: 'savePlayer',
+            dataPlayer: dataPlayer
+         });
+         this.dataPlayer = storePlayer.getState();
+      });
    };
 
    componentDidMount = async () => {
+      this.getDataCards();
+      // this.getDataRoom();
+
       const { data } = await get('/get-card-all');
       let allCardPlay;
       let cardInHand;
@@ -42,18 +93,83 @@ export default class GamePlay extends React.PureComponent {
       });
 
       socket.on('end-turn', data => {
-         console.log(data, 'player-end');
          if (!data) return;
-         this.setState({
-            player1: data.player1,
-            player2: data.player2
-         });
+         if (data && data.end === '1player') {
+            if (data.isPlayer !== this.dataPlayer.isPlayer) {
+               this.setState({
+                  cardPlayEnemy: "?"
+               });
+            }
+            return;
+         }
+
+         if (this.dataPlayer && this.dataPlayer.isPlayer === 'player1') {
+            this.setState(prevState => ({
+               pSelf: data.player1,
+               pEnemy: data.player2,
+               cardPlayEnemy: "?",
+               listPlayerWin: [...prevState.listPlayerWin, data.playerWin],
+               displayWinPSelf: data.playerWin === 'player1' ? "win-show" : "win-not-show",
+               displayWinPEnemy: data.playerWin === 'player2' ? "win-show" : "win-not-show"
+            }));
+         } else if (this.dataPlayer && this.dataPlayer.isPlayer === 'player2') {
+            this.setState(prevState => ({
+               pSelf: data.player2,
+               pEnemy: data.player1,
+               cardPlayEnemy: "?",
+               listPlayerWin: [...prevState.listPlayerWin, data.playerWin],
+               displayWinPSelf: data.playerWin === 'player2' ? "win-show" : "win-not-show",
+               displayWinPEnemy: data.playerWin === 'player1' ? "win-show" : "win-not-show"
+            }));
+         };
+
+         console.log(data.playerWin);
 
          setTimeout(() => {
-            this.startTurn();
-         }, 2000);
+            const { pEnemy: { hp: hpE }, pSelf: { hp: hpS } } = this.state;
+            if (hpE <= 0 || hpS <= 0) {
+               this.endGame()
+            } else {
+               this.startTurn();
+            }
+
+         }, 3000);
       });
-      
+
+      socket.on('playerUpdateNumCard', data => {
+         if (!data) return;
+         if (!this.dataPlayer.isPlayer) return;
+         if (data.isPlayer !== this.dataPlayer.isPlayer) {
+            this.setState({
+               numCardInHandEnemy: data.numCard
+            });
+         }
+      });
+   };
+
+   componentDidUpdate(prevProps, prevState) {
+      const cardHandLength = this.state.cardInHand.length;
+      if (prevState.cardInHand !== this.state.cardInHand && this.dataPlayer.joinInRoom) {
+         socket.emit('updateNumCard', {
+            numCard: cardHandLength,
+            room: this.dataPlayer.joinInRoom,
+            isPlayer: this.dataPlayer.isPlayer,
+         });
+      }
+   };
+
+   getDataCards = async () => {
+      const { data } = await get('get-data-cards');
+      this.setState({
+         cards: data
+      });
+   };
+
+   getDataRoom = async () => {
+      if (this.dataPlayer.joinInRoom) {
+         const { data } = await get(`get-data-room=${this.dataPlayer.joinInRoom}`);
+         console.log("dataRoom", data)
+      }
    };
 
    shuffleIndexCard = (arrayIndexCard) => {
@@ -70,13 +186,25 @@ export default class GamePlay extends React.PureComponent {
       return arrayIndexCard;
    };
 
-
-   sell = () => { };
+   sell = async () => {
+      const { cardPlay, cardPoint, cardInHand} = this.state;
+      const { playerName } = this.dataPlayer;
+      const { data } = await post('/sell', { name: playerName, card: cardPlay });
+      if (!data) return;
+      this.setState(p => ({
+         pSelf: {
+            ...p.pSelf,
+            point: p.pSelf.point + cardPoint
+         },
+         cardPlay: null,
+         cardDescriptios: '',
+         cardPoint: 0
+      }));
+      this.removeCardPlay(cardInHand, cardPlay);
+   };
 
    endTurn = async () => {
       const { cardPlay, round, cardInHand: ch } = this.state;
-      const playerName = sessionStorage.getItem('player_name');
-      const room = sessionStorage.getItem('room');
       // const { data } = await post('/end-trun', { card: cardPlay, player: JSON.parse(playerName), room: JSON.parse(room), round });
       // console.log(data);
       // if (data && !(data.res && data.res === 'end')) {
@@ -86,34 +214,47 @@ export default class GamePlay extends React.PureComponent {
       //    });
       // }
 
+      this.removeCardPlay(ch, cardPlay);
+
+      this.setState({
+         disabledCardDeck: true,
+         disabledCardInHand: true,
+         disableSell: true,
+         endTurn: true
+      });
+      const { playerName, joinInRoom, isPlayer } = this.dataPlayer;
+      socket.emit('endTurn', {
+         card: cardPlay,
+         player: playerName,
+         room: {
+            keyRoom: joinInRoom,
+            isPlayer: isPlayer,
+         },
+         round
+      });
+   };
+
+   removeCardPlay = (ch, cardPlay) => {
       let cardInHand = ch;
       const index = cardInHand.indexOf(cardPlay);
       if (index !== -1) cardInHand.splice(index, 1);
       this.setState({
          cardInHand: [...cardInHand]
       });
-
-      socket.emit('endTurn', { 
-         card: cardPlay, 
-         player: JSON.parse(playerName), 
-         room: JSON.parse(room), 
-         round 
-      });
-
-      // socket.emit('end-turn', {
-      //    card: cardPlay,
-      //    room: JSON.parse(room),
-      //    player: JSON.parse(playerName),
-      //    round: round
-      // });
-
-      
    };
 
    startTurn = () => {
       this.setState(p => ({
+         cardPlay: null,
+         cardDescriptios: null,
          endTurn: false,
-         round: p.round + 1
+         round: p.round + 1,
+         cardPlayEnemy: null,
+         disabledCardDeck: false,
+         disabledCardInHand: false,
+         disableSell: false,
+         displayWinPSelf: "win-not-show",
+         displayWinPEnemy: "win-not-show",
       }));
       this.pickCard();
    };
@@ -129,50 +270,104 @@ export default class GamePlay extends React.PureComponent {
    };
 
    selectCard = card => {
+      const { cards } = this.state;
+
+      const cardDescriptios = cards[card] ? cards[card].description : ''
+      const cardPoint = cards[card] ? cards[card].price : 0
       this.setState({
-         cardPlay: card
+         cardPlay: card,
+         cardDescriptios: cardDescriptios,
+         cardPoint
       })
-      console.log(card);
+   };
+
+   displayNumCardInHandEnemy = () => {
+      let displayer = [];
+      const { numCardInHandEnemy } = this.state;
+      for (let index = 0; index < numCardInHandEnemy; index++) {
+         displayer.push("?");
+      };
+      return displayer;
+   };
+
+   endGame = () => {
+      const { pEnemy: { hp: hpE }, pSelf: { hp: hpS } } = this.state;
+      // if (hpE <= 0 || hpS <= 0) {
+      console.log(this.dataPlayer)
+      this.setState({
+         cardPlay: null,
+         cardDescriptios: null,
+         endTurn: true,
+         cardPlayEnemy: null,
+         disabledCardDeck: true,
+         disabledCardInHand: true,
+         disableSell: true,
+         displayWinPSelf: "win-not-show",
+         displayWinPEnemy: "win-not-show",
+         playerWinGame: hpE <= 0 ? this.dataPlayer.playerName : this.dataPlayer.playerEnemy,
+         bdDisplay: true
+      });
+      // }
+   };
+
+   closeBackDrop = () => {
+      this.setState({
+         bdDisplay: false
+      });
    };
 
    render() {
-      const { cardInHand, player1, player2, cardPlay, endTurn } = this.state;
+      const {
+         cardInHand, pEnemy, pSelf, cardPlay, endTurn, cardDescriptios, cardPoint,
+         disabledCardInHand, disabledCardDeck, disableSell, cardPlayEnemy,
+         displayWinPSelf, displayWinPEnemy, playerWinGame, bdDisplay
+      } = this.state;
+
       return (
          <div className="box-game-play">
+            {bdDisplay &&
+               <div className="back-drop-end-game" onClick={null}>
+                  <i className="icon-close" onClick={this.closeBackDrop}>[close]</i>
+                  <p className="player-win-game">{playerWinGame}</p>
+                  <p className="WIN">WIN</p>
+               </div>
+            }
             <div className="god1 bd1">
                <div className="point1 bd1">
-                  <p>{player1.point}</p>
+                  <p>{pEnemy.point}</p>
                </div>
                <div className="god bd1">
-                  <p id="hp1">{player1.hp}</p>
+                  <p id="hp1">{pEnemy.hp}</p>
                   <div className="armor bd1">
-                     <p id="armor1">{player1.armor <= 0 ? 0 : player1.armor}</p>
+                     <p id="armor1">{pEnemy.armor <= 0 ? 0 : pEnemy.armor}</p>
                   </div>
+               </div>
+               <div className="box-display-win" id={displayWinPEnemy}>
+                  <h1>WIN</h1>
                </div>
             </div>
             <button className="card card-all1 card-all" onClick={null}>
                Card-all1
             </button>
-            <div className="card-hand1 card-hand bd1">
-               <button className="card" onClick={null}>
-                  card-F1
-            </button>
-               <button className="card" onClick={null}>
-                  card-W1
-            </button>
-               <button className="card" onClick={null}>
-                  card-G1
-            </button>
+            <div id="card-in-hand" className="card-hand1 card-hand bd1">
+               {this.displayNumCardInHandEnemy().map((va, index) =>
+                  <div
+                     key={index}
+                     className="card"
+                  >
+                     {va}
+                  </div>
+               )}
             </div>
-            <div className="card-play1 bd1">
+            <div className="card-play1 bd1" onClick={this.endGame}>
                <div className="card-play">
-                  <p id="card-play1"></p>
+                  <p id="card-play1">{cardPlayEnemy}</p>
                </div>
             </div>
             <div className="hr">
-               <button className="btn-sell" onClick={this.sell}>Sell</button>
+               <button className="btn-sell" onClick={this.sell} disabled={disableSell || !cardPlay}>Sell</button>
                -----------------<p id="round"></p>
-               <button className="btn-ok" onClick={this.endTurn} disabled={endTurn}>
+               <button className="btn-ok" onClick={this.endTurn} disabled={endTurn || !cardPlay}>
                   OK
                </button>
             </div>
@@ -180,29 +375,43 @@ export default class GamePlay extends React.PureComponent {
                <div id="card-play2" className="card-play">
                   <p id="card-play2">{cardPlay && cardPlay}</p>
                </div>
+               <div className="card-detail">
+                  <p className="card-description">{cardDescriptios}</p>
+                  <p className="card-point">sell {cardPoint} point</p>
+               </div>
+
             </div>
             <div id="card-in-hand" className="card-hand2 card-hand bd1">
                {cardInHand.length > 0 && cardInHand.map((va, index) =>
-                  <button key={index} className="card" onClick={() => this.selectCard(va)} >
+                  <button
+                     key={index}
+                     className="card"
+                     onClick={() => this.selectCard(va)}
+                     disabled={disabledCardInHand}
+                  >
                      {va}
                   </button>
                )}
             </div>
-            <button id="card-all" className="card card-all2 card-all" onClick={this.pickCard} disabled={cardInHand.length >= 5}>
+            <button id="card-all" className="card card-all2 card-all" onClick={this.pickCard} disabled={cardInHand.length >= 5 || disabledCardDeck}>
                Card-all2
             </button>
             <div className="god2 bd1">
+               <div className="box-display-win" id={displayWinPSelf}>
+                  <h1>WIN</h1>
+               </div>
                <div className="god bd1">
                   <div className="armor bd1">
-                     <p id="armor2">{player2.armor <= 0 ? 0 : player2.armor}</p>
+                     <p id="armor2">{pSelf.armor <= 0 ? 0 : pSelf.armor}</p>
                   </div>
-                  <p id="hp2">{player2.hp}</p>
+                  <p id="hp2">{pSelf.hp}</p>
                </div>
                <div className="point2 bd1">
-                  {player2.point}
+                  <p>point</p>
+                  <p>{pSelf.point}</p>
                </div>
             </div>
          </div>
-      )
-   }
+      );
+   };
 };

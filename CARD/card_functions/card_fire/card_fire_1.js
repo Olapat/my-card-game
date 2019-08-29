@@ -4,7 +4,7 @@ const DelHP = require('../../functions/del_HP');
 module.exports = class F1 extends Fire {
     constructor() {
         super();
-        this.name = 'f1';
+        this.name = 'F1';
         this.description = 'ลบ HP 5';
         this.price = 2;
     };
