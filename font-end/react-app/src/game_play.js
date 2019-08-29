@@ -60,7 +60,7 @@ export default class GamePlay extends React.PureComponent {
             playerEnemy = data.player1;
             console.log(playerEnemy)
          } else {
-            console.log( this.dataPlayer)
+            console.log(this.dataPlayer)
 
          }
          const dataPlayer = {
@@ -187,7 +187,7 @@ export default class GamePlay extends React.PureComponent {
    };
 
    sell = async () => {
-      const { cardPlay, cardPoint, cardInHand} = this.state;
+      const { cardPlay, cardPoint, cardInHand } = this.state;
       const { playerName } = this.dataPlayer;
       const { data } = await post('/sell', { name: playerName, card: cardPlay });
       if (!data) return;
@@ -270,15 +270,24 @@ export default class GamePlay extends React.PureComponent {
    };
 
    selectCard = card => {
-      const { cards } = this.state;
+      const { cardPlay, cards } = this.state;
 
-      const cardDescriptios = cards[card] ? cards[card].description : ''
-      const cardPoint = cards[card] ? cards[card].price : 0
-      this.setState({
-         cardPlay: card,
-         cardDescriptios: cardDescriptios,
-         cardPoint
-      })
+      // if ( cardPlay === card) {
+      //    this.setState({
+      //       cardPlay: null,
+      //       cardDescriptios: null,
+      //       cardPoint: 0
+      //    });
+      // } else {
+         const cardDescriptios = cards[card] ? cards[card].description : '';
+         const cardPoint = cards[card] ? cards[card].price : 0;
+   
+         this.setState({
+            cardPlay: card,
+            cardDescriptios: cardDescriptios,
+            cardPoint
+         });
+      // };
    };
 
    displayNumCardInHandEnemy = () => {
@@ -323,6 +332,7 @@ export default class GamePlay extends React.PureComponent {
          displayWinPSelf, displayWinPEnemy, playerWinGame, bdDisplay
       } = this.state;
 
+      const marginCard = Math.floor(100 / cardInHand.length);
       return (
          <div className="box-game-play">
             {bdDisplay &&
@@ -333,20 +343,30 @@ export default class GamePlay extends React.PureComponent {
                </div>
             }
             <div className="god1 bd1">
-               <div className="point1 bd1">
+               <div className="point bd1">
                   <p>{pEnemy.point}</p>
                </div>
-               <div className="god bd1">
-                  <p id="hp1">{pEnemy.hp}</p>
-                  <div className="armor bd1">
-                     <p id="armor1">{pEnemy.armor <= 0 ? 0 : pEnemy.armor}</p>
+               {/* -- */}
+
+               <div className="box-god">
+                  <div className="god god-enemy bd1">
+                     <img src="/fox.jpg" alt="fox" width={"100%"} height={"100%"} style={{ borderRadius: "50%" }} />
+                  </div>
+                  <div className="hp-bar bd1">
+                     <p>{pEnemy.hp}</p>
+                  </div>
+                  <div className="armor-bar bd1" id={pEnemy.armor <= 0 ? "armor-bar-hidden" : ""}>
+                     {pEnemy.armor > 0 && <p>{pEnemy.armor}</p>}
                   </div>
                </div>
+
+               {/* -- */}
+               
                <div className="box-display-win" id={displayWinPEnemy}>
                   <h1>WIN</h1>
                </div>
             </div>
-            <button className="card card-all1 card-all" onClick={null}>
+            <button className="card-all1 card-all" onClick={null}>
                Card-all1
             </button>
             <div id="card-in-hand" className="card-hand1 card-hand bd1">
@@ -387,27 +407,46 @@ export default class GamePlay extends React.PureComponent {
                      key={index}
                      className="card"
                      onClick={() => this.selectCard(va)}
+                     // onBlur={() => this.selectCard(va)}
                      disabled={disabledCardInHand}
+                     // style={
+                     //    cardInHand.length > 2 ? { 
+                     //       position: "absolute",
+                     //       zIndex: 10 + index, 
+                     //       left: index === 0 ? marginCard
+                     //       : marginCard + (((233 * marginCard) / 100) * index)
+                     //    }
+                     //    : null
+                     // }
                   >
                      {va}
                   </button>
                )}
             </div>
-            <button id="card-all" className="card card-all2 card-all" onClick={this.pickCard} disabled={cardInHand.length >= 5 || disabledCardDeck}>
+            <button id="card-all" className="card-all2 card-all" onClick={this.pickCard} disabled={cardInHand.length >= 5 || disabledCardDeck}>
                Card-all2
             </button>
             <div className="god2 bd1">
                <div className="box-display-win" id={displayWinPSelf}>
                   <h1>WIN</h1>
                </div>
-               <div className="god bd1">
-                  <div className="armor bd1">
-                     <p id="armor2">{pSelf.armor <= 0 ? 0 : pSelf.armor}</p>
+               {/* -- */}
+
+               <div className="box-god">
+                  <span className="armor-bar bd1" id={pEnemy.armor <= 0 ? "armor-bar-hidden" : ""}>
+                     {pSelf.armor > 0 && <p>{pSelf.armor}</p>}
+                  </span>
+                  <span className="hp-bar bd1">
+                     {pSelf.hp}
+                  </span>
+                  <div className="god god-self bd1">
+                     <img src="/frog2.png" alt="frog" width={"100%"} height={"100%"} style={{ borderRadius: "50%" }} />
                   </div>
-                  <p id="hp2">{pSelf.hp}</p>
                </div>
-               <div className="point2 bd1">
-                  <p>point</p>
+
+
+               {/* -- */}
+               <div className="point bd1">
                   <p>{pSelf.point}</p>
                </div>
             </div>

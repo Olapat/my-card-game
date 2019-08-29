@@ -104,7 +104,7 @@ export default class Home extends React.PureComponent {
       const { rooms } = this.state;
       const keyRooms = Object.keys(rooms);
       return (
-         <div className="content">
+         <div className="content-home">
             <div className="row">
                <p style={{ marginRight: 12 }}>create room: </p>
                <button onClick={this.createRoom} className="btn">
