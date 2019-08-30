@@ -367,13 +367,13 @@ export default class GamePlay extends React.PureComponent {
                </div>
             </div>
             <button className="card-all1 card-all" onClick={null}>
-               Card-all1
+               ♣
             </button>
             <div id="card-in-hand" className="card-hand1 card-hand bd1">
                {this.displayNumCardInHandEnemy().map((va, index) =>
                   <div
                      key={index}
-                     className="card"
+                     className="card card1"
                   >
                      {va}
                   </div>
@@ -405,7 +405,7 @@ export default class GamePlay extends React.PureComponent {
                {cardInHand.length > 0 && cardInHand.map((va, index) =>
                   <button
                      key={index}
-                     className="card"
+                     className="card card2"
                      onClick={() => this.selectCard(va)}
                      // onBlur={() => this.selectCard(va)}
                      disabled={disabledCardInHand}
@@ -424,7 +424,7 @@ export default class GamePlay extends React.PureComponent {
                )}
             </div>
             <button id="card-all" className="card-all2 card-all" onClick={this.pickCard} disabled={cardInHand.length >= 5 || disabledCardDeck}>
-               Card-all2
+               <p>♣</p>
             </button>
             <div className="god2 bd1">
                <div className="box-display-win" id={displayWinPSelf}>
@@ -433,8 +433,10 @@ export default class GamePlay extends React.PureComponent {
                {/* -- */}
 
                <div className="box-god">
-                  <span className="armor-bar bd1" id={pEnemy.armor <= 0 ? "armor-bar-hidden" : ""}>
-                     {pSelf.armor > 0 && <p>{pSelf.armor}</p>}
+               {/* id={pEnemy.armor <= 0 ? "armor-bar-hidden" : ""} */}
+                  <span className="armor-bar bd1" > 
+                     {/* {pSelf.armor > 0 && <p>{pSelf.armor}</p>} */}
+                     <p>{pSelf.armor}</p>
                   </span>
                   <span className="hp-bar bd1">
                      {pSelf.hp}
