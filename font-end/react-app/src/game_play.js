@@ -60,7 +60,7 @@ export default class GamePlay extends React.PureComponent {
             playerEnemy = data.player1;
             console.log(playerEnemy)
          } else {
-            console.log( this.dataPlayer)
+            console.log(this.dataPlayer)
 
          }
          const dataPlayer = {
@@ -159,7 +159,7 @@ export default class GamePlay extends React.PureComponent {
    };
 
    getDataCards = async () => {
-      const { data } = await get('get-data-cards');
+      const { data } = await get('/get-data-cards');
       this.setState({
          cards: data
       });
@@ -167,10 +167,17 @@ export default class GamePlay extends React.PureComponent {
 
    getDataRoom = async () => {
       if (this.dataPlayer.joinInRoom) {
-         const { data } = await get(`get-data-room=${this.dataPlayer.joinInRoom}`);
+         const { data } = await get(`/get-data-room=${this.dataPlayer.joinInRoom}`);
          console.log("dataRoom", data)
       }
    };
+
+   // getDataPlayer = async () => {
+   //    if (this.dataPlayer.playerName && this.dataPlayer.playerEnemy) {
+   //       const { data } = await get(`/get-data-player=${this.dataPlayer.playerName}&&playerEnemy=${this.dataPlayer.playerEnemy}`);
+   //       console.data(data);
+   //    };
+   // };
 
    shuffleIndexCard = (arrayIndexCard) => {
       let IndexCard = arrayIndexCard.length,
@@ -187,7 +194,7 @@ export default class GamePlay extends React.PureComponent {
    };
 
    sell = async () => {
-      const { cardPlay, cardPoint, cardInHand} = this.state;
+      const { cardPlay, cardPoint, cardInHand } = this.state;
       const { playerName } = this.dataPlayer;
       const { data } = await post('/sell', { name: playerName, card: cardPlay });
       if (!data) return;
@@ -270,15 +277,24 @@ export default class GamePlay extends React.PureComponent {
    };
 
    selectCard = card => {
-      const { cards } = this.state;
+      const { cardPlay, cards } = this.state;
 
-      const cardDescriptios = cards[card] ? cards[card].description : ''
-      const cardPoint = cards[card] ? cards[card].price : 0
+      // if ( cardPlay === card) {
+      //    this.setState({
+      //       cardPlay: null,
+      //       cardDescriptios: null,
+      //       cardPoint: 0
+      //    });
+      // } else {
+      const cardDescriptios = cards[card] ? cards[card].description : '';
+      const cardPoint = cards[card] ? cards[card].price : 0;
+
       this.setState({
          cardPlay: card,
          cardDescriptios: cardDescriptios,
          cardPoint
-      })
+      });
+      // };
    };
 
    displayNumCardInHandEnemy = () => {
@@ -320,9 +336,10 @@ export default class GamePlay extends React.PureComponent {
       const {
          cardInHand, pEnemy, pSelf, cardPlay, endTurn, cardDescriptios, cardPoint,
          disabledCardInHand, disabledCardDeck, disableSell, cardPlayEnemy,
-         displayWinPSelf, displayWinPEnemy, playerWinGame, bdDisplay
+         displayWinPSelf, displayWinPEnemy, playerWinGame, bdDisplay, round
       } = this.state;
 
+      const marginCard = Math.floor(100 / cardInHand.length);
       return (
          <div className="box-game-play">
             {bdDisplay &&
@@ -333,40 +350,52 @@ export default class GamePlay extends React.PureComponent {
                </div>
             }
             <div className="god1 bd1">
-               <div className="point1 bd1">
+               <div className="point bd1">
                   <p>{pEnemy.point}</p>
                </div>
-               <div className="god bd1">
-                  <p id="hp1">{pEnemy.hp}</p>
-                  <div className="armor bd1">
-                     <p id="armor1">{pEnemy.armor <= 0 ? 0 : pEnemy.armor}</p>
+               <div className="box-god">
+                  <div className="god god-enemy bd1">
+                     <img src="/fox.jpg" alt="fox" width={"100%"} height={"100%"} style={{ borderRadius: "50%" }} />
+                  </div>
+                  <div className="hp-bar">
+                     <div className="hp-bar-color" style={{ width: `${(100 / 30) * parseInt(pEnemy.hp)}%` }}>
+                     
+                     </div>
+                     <p>{pEnemy.hp}</p>
+                  </div>
+                  <div className="armor-bar bd1" id={pEnemy.armor <= 0 ? "armor-bar-hidden" : ""}>
+                     {pEnemy.armor > 0 && <p>{pEnemy.armor}</p>}
+                     <div className="armor-bar-color" style={{ width: `${(100 / 30) * parseInt(pEnemy.armor)}%` }}>
+                     
+                     </div>
                   </div>
                </div>
                <div className="box-display-win" id={displayWinPEnemy}>
                   <h1>WIN</h1>
                </div>
+               <p className="player-enemy-name">{this.dataPlayer.playerEnemy}</p>
             </div>
-            <button className="card card-all1 card-all" onClick={null}>
-               Card-all1
+            <button className="card-all1 card-all" onClick={null}>
+               ♣
             </button>
             <div id="card-in-hand" className="card-hand1 card-hand bd1">
                {this.displayNumCardInHandEnemy().map((va, index) =>
                   <div
                      key={index}
-                     className="card"
+                     className="card card1"
                   >
                      {va}
                   </div>
                )}
             </div>
-            <div className="card-play1 bd1" onClick={this.endGame}>
+            <div className="card-play1 bd1">
                <div className="card-play">
                   <p id="card-play1">{cardPlayEnemy}</p>
                </div>
             </div>
             <div className="hr">
                <button className="btn-sell" onClick={this.sell} disabled={disableSell || !cardPlay}>Sell</button>
-               -----------------<p id="round"></p>
+               <p id="round">{round}</p>
                <button className="btn-ok" onClick={this.endTurn} disabled={endTurn || !cardPlay}>
                   OK
                </button>
@@ -376,7 +405,17 @@ export default class GamePlay extends React.PureComponent {
                   <p id="card-play2">{cardPlay && cardPlay}</p>
                </div>
                <div className="card-detail">
-                  <p className="card-description">{cardDescriptios}</p>
+                  <p
+                     className="card-description"
+                     style={cardDescriptios && cardDescriptios.length > 60 
+                        ? { fontSize: ".8em" } 
+                        : cardDescriptios && cardDescriptios.length > 40 
+                        ? { fontSize: ".9em" }
+                        : { fontSize: "1em" }
+                     }
+                  >
+                     {cardDescriptios}
+                  </p>
                   <p className="card-point">sell {cardPoint} point</p>
                </div>
 
@@ -385,29 +424,57 @@ export default class GamePlay extends React.PureComponent {
                {cardInHand.length > 0 && cardInHand.map((va, index) =>
                   <button
                      key={index}
-                     className="card"
+                     className="card card2"
                      onClick={() => this.selectCard(va)}
+                     // onBlur={() => this.selectCard(va)}
                      disabled={disabledCardInHand}
+                  // style={
+                  //    cardInHand.length > 2 ? { 
+                  //       position: "absolute",
+                  //       zIndex: 10 + index, 
+                  //       left: index === 0 ? marginCard
+                  //       : marginCard + (((233 * marginCard) / 100) * index)
+                  //    }
+                  //    : null
+                  // }
                   >
                      {va}
                   </button>
                )}
             </div>
-            <button id="card-all" className="card card-all2 card-all" onClick={this.pickCard} disabled={cardInHand.length >= 5 || disabledCardDeck}>
-               Card-all2
+            <button id="card-all" className="card-all2 card-all" onClick={this.pickCard} disabled={cardInHand.length >= 5 || disabledCardDeck}>
+               <p>♣</p>
             </button>
             <div className="god2 bd1">
                <div className="box-display-win" id={displayWinPSelf}>
                   <h1>WIN</h1>
                </div>
-               <div className="god bd1">
-                  <div className="armor bd1">
-                     <p id="armor2">{pSelf.armor <= 0 ? 0 : pSelf.armor}</p>
+               {/* -- */}
+               <p className="player-self-name">{this.dataPlayer.playerName}</p>
+
+               <div className="box-god">
+               {/* id={pEnemy.armor <= 0 ? "armor-bar-hidden" : ""} */}
+                  <div className="armor-bar armor-bar-self" >
+                     <div className="armor-bar-color" style={{ width: `${(100 / 30) * parseInt(pSelf.armor)}%` }}>
+                     
+                     </div>
+                     {/* {pSelf.armor > 0 && <p>{pSelf.armor}</p>} */}
+                     <p>{pSelf.armor}</p>
                   </div>
-                  <p id="hp2">{pSelf.hp}</p>
+                  <div className="hp-bar hp-bar-self">
+                     <div className="hp-bar-color" style={{ width: `${(100 / 30) * parseInt(pSelf.hp)}%` }}>
+                       
+                     </div>
+                     <p>{pSelf.hp}</p>
+                  </div>
+                  <div className="god god-self">
+                     <img src="/frog2.png" alt="frog" width={"100%"} height={"100%"} style={{ borderRadius: "50%" }} />
+                  </div>
                </div>
-               <div className="point2 bd1">
-                  <p>point</p>
+
+
+               {/* -- */}
+               <div className="point bd1">
                   <p>{pSelf.point}</p>
                </div>
             </div>

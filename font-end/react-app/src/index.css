@@ -17,6 +17,13 @@ code {
   flex-direction: column;
 }
 
+.content-home {
+  display: flex;
+  flex-direction: column;
+  background-image: url('https://steamcdn-a.akamaihd.net/steam/apps/397060/ss_de8c332f3c763bd2f9ae7552452ffa436c13e624.600x338.jpg?t=1561481537');
+  min-height: 100vh
+}
+
 .row {
   display: inline-flex;
   align-items: center;
